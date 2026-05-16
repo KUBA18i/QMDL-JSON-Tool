@@ -14,42 +14,37 @@ using namespace std;
 using json = nlohmann::ordered_json;
 namespace fs = filesystem;
 
-/* Vector */
-typedef float h2pop_vec3_t[3];
-
-/* MDL header */
 struct h2pop_mdl_header_t
 {
-    int ident;            /* magic number: "RAPO" */
-    int version;          /* version: 50 */
+    int ident; //should be "RAPO"
+    int version; //should be 50
 
-    h2pop_vec3_t scale;         /* scale factor */
-    h2pop_vec3_t translate;     /* translation vector */
-    float boundingradius;
-    h2pop_vec3_t eyeposition;   /* eyes' position */
+    float scale[3];
+    float translate[3];
+    float boundingRadius;
+    float eyePosition[3];
 
-    int num_skins;        /* number of textures */
-    int skinwidth;        /* texture width */
-    int skinheight;       /* texture height */
+    int numSkins;
+    int skinWidth;
+    int skinHeight;
 
-    int num_verts;        /* number of vertices */
-    int num_tris;         /* number of triangles */
-    int num_frames;       /* number of frames */
+    int numVerts;
+    int numTris;
+    int numFrames;
 
-    int synctype;         /* 0 = synchron, 1 = random */
-    int flags;            /* state flag */
+    int syncType; //0 = synchronised, 1 = random
+    int flags;
     float size;
 
-    int num_st_verts; //RAPO addition
+    int numStVerts; //RAPO addition
 };
 
-/* Skin */
 struct h2pop_mdl_skin_t
 {
-    int group;      /* 0 = single, 1 = group */
+    int group; //0 = single, 1 = group
     vector<uint8_t> data;  /* texture data */
 };
-/* Group of pictures */
+
 struct h2pop_mdl_groupskin_t
 {
     int group;
@@ -59,7 +54,6 @@ struct h2pop_mdl_groupskin_t
 };
 using h2pop_SkinElement = variant<h2pop_mdl_skin_t, h2pop_mdl_groupskin_t>;
 
-/* Texture coords */
 struct h2pop_mdl_texcoord_t
 {
     int onseam;
@@ -67,44 +61,41 @@ struct h2pop_mdl_texcoord_t
     int t;
 };
 
-/* Triangle info */
 struct h2pop_mdl_triangle_t
 {
     int	facesfront;
-    unsigned short	vertindex[3];
-    unsigned short	stindex[3];
+    uint16_t vertindex[3];
+    uint16_t stindex[3];
 }; //this is different in RAPO
 
-/* Compressed vertex */
 struct h2pop_mdl_vertex_t
 {
-    unsigned char v[3];
-    unsigned char normalIndex;
+    uint8_t v[3];
+    uint8_t normalIndex;
 };
 
-/* Simple frame */
 struct h2pop_mdl_simpleframe_t
 {
-    struct h2pop_mdl_vertex_t bboxmin; /* bouding box min */
-    struct h2pop_mdl_vertex_t bboxmax; /* bouding box max */
+    struct h2pop_mdl_vertex_t bboxmin;
+    struct h2pop_mdl_vertex_t bboxmax;
     char name[16];
-    vector<h2pop_mdl_vertex_t> verts;  /* vertex list of the frame */
+    vector<h2pop_mdl_vertex_t> verts;
 };
-/* Model frame */
+
 struct h2pop_mdl_frame_t
 {
-    int type;                        /* 0 = simple, !0 = group */
+    int type; //0 = simple, 1 = group
     struct h2pop_mdl_simpleframe_t frame;
 };
-/* Group of simple frames */
+
 struct h2pop_mdl_groupframe_t
 {
-    int type;                         /* !0 = group */
-    int nb;                           /* number of frames in group */
-    struct h2pop_mdl_vertex_t min;          /* min pos in all simple frames */
-    struct h2pop_mdl_vertex_t max;          /* max pos in all simple frames */
-    vector<float> time;                      /* time duration for each frame */
-    vector<h2pop_mdl_simpleframe_t> frames; /* simple frame list */
+    int type; //1 = group
+    int nb;
+    struct h2pop_mdl_vertex_t min;
+    struct h2pop_mdl_vertex_t max;
+    vector<float> time; //time duration for each frame
+    vector<h2pop_mdl_simpleframe_t> frames;
 };
 using h2pop_FrameElement = variant<h2pop_mdl_frame_t, h2pop_mdl_groupframe_t>;
 

@@ -1,0 +1,1587 @@
+{
+  "header": {
+    "ident": "DKMD",
+    "version": 1,
+    "origin": [0.0, -0.0, -24.0],
+    "frameSize": 680,
+    "numSkins": 1,
+    "numVertices": 160,
+    "numTexCoords": 117,
+    "numTriangles": 172,
+    "numGlCommands": 1210,
+    "numFrames": 6,
+    "numSurfaces": 1,
+    "offsetSkins": 88,
+    "offsetTexCoords": 152,
+    "offsetTriangles": 620,
+    "offsetFrames": 3372,
+    "offsetGlCommands": 7452,
+    "offsetSurfaces": 12292,
+    "offsetEnd": 12368,
+    "numSequences": 1,
+    "offsetSequences": 12344
+  },
+  "skins": [
+    "skins/healthtree.bmp"
+  ],
+  "UV": [[127, 47], [87, 33], [117, 12], [93, 86], [94, 91], [115, 65], [126, 94], [38, 60], [62, 80], [24, 90], [65, 45], [30, 30], [6, 59], [39, 60], [65, 44], [75, 38], [64, 23], [65, 18], [75, 31], [87, 34], [126, 47], [118, 12], [115, 64], [125, 94], [88, 33], [117, 11], [76, 42], [82, 71], [74, 75], [78, 72], [77, 37], [82, 75], [71, 72], [73, 49], [70, 40], [76, 80], [87, 78], [70, 42], [70, 76], [74, 33], [75, 34], [71, 76], [74, 74], [73, 30], [79, 52], [72, 50], [81, 69], [82, 33], [71, 30], [82, 12], [82, 14], [89, 20], [82, 35], [82, 22], [77, 24], [76, 41], [79, 27], [76, 38], [81, 38], [80, 49], [93, 87], [75, 40], [83, 72], [72, 69], [76, 32], [79, 71], [72, 75], [72, 72], [80, 73], [72, 36], [80, 81], [81, 85], [71, 99], [78, 59], [62, 31], [84, 14], [80, 9], [81, 77], [80, 103], [75, 102], [77, 106], [75, 96], [60, 112], [89, 80], [92, 114], [127, 48], [72, 43], [73, 74], [80, 66], [78, 63], [85, 79], [82, 85], [77, 56], [72, 58], [73, 88], [78, 20], [63, 103], [86, 101], [73, 105], [87, 101], [90, 120], [69, 120], [99, 111], [78, 120], [91, 111], [102, 120], [118, 120], [83, 120], [35, 120], [105, 120], [56, 120], [15, 120], [43, 120], [43, 111], [31, 120], [65, 112], [67, 120]],
+  "triangles": [
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [0, 1, 2],
+      "textureIndices": [0, 1, 2]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [1, 0, 3],
+      "textureIndices": [1, 0, 3]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [4, 5, 2],
+      "textureIndices": [0, 1, 2]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [5, 4, 6],
+      "textureIndices": [1, 0, 3]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [7, 8, 2],
+      "textureIndices": [0, 1, 2]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [8, 7, 9],
+      "textureIndices": [1, 0, 3]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [10, 11, 12],
+      "textureIndices": [0, 1, 2]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [11, 10, 13],
+      "textureIndices": [1, 0, 3]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [14, 15, 12],
+      "textureIndices": [0, 1, 2]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [15, 14, 16],
+      "textureIndices": [1, 0, 3]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [17, 18, 12],
+      "textureIndices": [0, 1, 2]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [18, 17, 19],
+      "textureIndices": [1, 0, 3]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [20, 21, 22],
+      "textureIndices": [4, 5, 6]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [23, 24, 22],
+      "textureIndices": [0, 1, 2]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [24, 23, 25],
+      "textureIndices": [1, 0, 3]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [26, 27, 22],
+      "textureIndices": [0, 1, 2]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [27, 26, 28],
+      "textureIndices": [1, 0, 3]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [29, 30, 31],
+      "textureIndices": [0, 1, 2]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [30, 29, 32],
+      "textureIndices": [1, 0, 3]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [33, 34, 31],
+      "textureIndices": [0, 1, 2]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [34, 33, 35],
+      "textureIndices": [1, 0, 3]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [36, 37, 31],
+      "textureIndices": [0, 1, 2]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [37, 36, 38],
+      "textureIndices": [1, 0, 3]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [39, 40, 41],
+      "textureIndices": [0, 1, 2]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [40, 39, 42],
+      "textureIndices": [1, 0, 3]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [43, 44, 41],
+      "textureIndices": [0, 1, 2]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [44, 43, 45],
+      "textureIndices": [1, 0, 3]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [46, 47, 41],
+      "textureIndices": [0, 1, 2]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [47, 46, 48],
+      "textureIndices": [1, 0, 3]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [49, 50, 51],
+      "textureIndices": [7, 8, 9]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [49, 52, 50],
+      "textureIndices": [7, 10, 8]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [49, 53, 52],
+      "textureIndices": [7, 11, 10]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [49, 54, 53],
+      "textureIndices": [7, 12, 11]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [49, 51, 54],
+      "textureIndices": [7, 9, 12]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [55, 51, 50],
+      "textureIndices": [7, 9, 8]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [55, 50, 52],
+      "textureIndices": [7, 8, 10]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [55, 52, 53],
+      "textureIndices": [7, 10, 11]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [55, 53, 54],
+      "textureIndices": [7, 11, 12]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [55, 54, 51],
+      "textureIndices": [7, 12, 9]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [56, 57, 58],
+      "textureIndices": [13, 14, 8]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [56, 59, 57],
+      "textureIndices": [13, 11, 14]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [56, 60, 59],
+      "textureIndices": [13, 12, 11]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [56, 61, 60],
+      "textureIndices": [13, 9, 12]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [56, 58, 61],
+      "textureIndices": [13, 8, 9]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [62, 58, 57],
+      "textureIndices": [13, 8, 14]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [62, 57, 59],
+      "textureIndices": [13, 14, 11]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [62, 59, 60],
+      "textureIndices": [13, 11, 12]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [62, 60, 61],
+      "textureIndices": [13, 12, 9]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [62, 61, 58],
+      "textureIndices": [13, 9, 8]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [63, 64, 65],
+      "textureIndices": [7, 14, 8]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [63, 66, 64],
+      "textureIndices": [7, 11, 14]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [63, 67, 66],
+      "textureIndices": [7, 12, 11]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [63, 68, 67],
+      "textureIndices": [7, 9, 12]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [63, 65, 68],
+      "textureIndices": [7, 8, 9]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [69, 65, 64],
+      "textureIndices": [7, 8, 14]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [69, 64, 66],
+      "textureIndices": [7, 14, 11]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [69, 66, 67],
+      "textureIndices": [7, 11, 12]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [69, 67, 68],
+      "textureIndices": [7, 12, 9]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [69, 68, 65],
+      "textureIndices": [7, 9, 8]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [70, 71, 72],
+      "textureIndices": [7, 11, 10]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [70, 73, 71],
+      "textureIndices": [7, 12, 11]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [70, 74, 73],
+      "textureIndices": [7, 9, 12]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [70, 75, 74],
+      "textureIndices": [7, 8, 9]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [70, 72, 75],
+      "textureIndices": [7, 10, 8]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [76, 72, 71],
+      "textureIndices": [7, 10, 11]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [76, 71, 73],
+      "textureIndices": [7, 11, 12]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [76, 73, 74],
+      "textureIndices": [7, 12, 9]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [76, 74, 75],
+      "textureIndices": [7, 9, 8]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [76, 75, 72],
+      "textureIndices": [7, 8, 10]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [77, 78, 79],
+      "textureIndices": [7, 12, 11]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [77, 80, 78],
+      "textureIndices": [7, 9, 12]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [77, 81, 80],
+      "textureIndices": [7, 8, 9]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [77, 82, 81],
+      "textureIndices": [7, 10, 8]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [77, 79, 82],
+      "textureIndices": [7, 11, 10]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [83, 79, 78],
+      "textureIndices": [7, 11, 12]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [83, 78, 80],
+      "textureIndices": [7, 12, 9]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [83, 80, 81],
+      "textureIndices": [7, 9, 8]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [83, 81, 82],
+      "textureIndices": [7, 8, 10]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [83, 82, 79],
+      "textureIndices": [7, 10, 11]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [84, 85, 86],
+      "textureIndices": [15, 16, 17]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [86, 87, 84],
+      "textureIndices": [17, 18, 15]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [88, 63, 89],
+      "textureIndices": [19, 2, 20]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [89, 90, 88],
+      "textureIndices": [20, 3, 19]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [91, 63, 92],
+      "textureIndices": [19, 21, 20]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [92, 93, 91],
+      "textureIndices": [20, 3, 19]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [94, 63, 95],
+      "textureIndices": [19, 2, 20]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [95, 96, 94],
+      "textureIndices": [20, 3, 19]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [97, 70, 98],
+      "textureIndices": [1, 21, 20]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [98, 99, 97],
+      "textureIndices": [20, 3, 1]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [100, 70, 101],
+      "textureIndices": [1, 21, 20]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [101, 102, 100],
+      "textureIndices": [20, 3, 1]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [103, 70, 104],
+      "textureIndices": [19, 2, 20]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [104, 105, 103],
+      "textureIndices": [20, 3, 19]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [106, 49, 107],
+      "textureIndices": [22, 23, 4]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [108, 49, 109],
+      "textureIndices": [24, 21, 0]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [109, 110, 108],
+      "textureIndices": [0, 3, 24]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [111, 49, 112],
+      "textureIndices": [1, 25, 0]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [112, 113, 111],
+      "textureIndices": [0, 3, 1]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [70, 114, 115],
+      "textureIndices": [26, 27, 28]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [70, 115, 116],
+      "textureIndices": [26, 28, 29]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [70, 116, 114],
+      "textureIndices": [30, 31, 32]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [116, 115, 117],
+      "textureIndices": [33, 34, 35]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [118, 116, 117],
+      "textureIndices": [36, 37, 38]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [116, 118, 114],
+      "textureIndices": [37, 36, 39]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [63, 119, 120],
+      "textureIndices": [40, 41, 42]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [63, 120, 121],
+      "textureIndices": [43, 44, 45]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [63, 121, 119],
+      "textureIndices": [40, 46, 41]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [114, 84, 121],
+      "textureIndices": [47, 48, 49]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [121, 120, 114],
+      "textureIndices": [50, 51, 52]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [121, 84, 87],
+      "textureIndices": [53, 15, 18]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [119, 114, 120],
+      "textureIndices": [54, 55, 56]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [122, 121, 87],
+      "textureIndices": [57, 58, 59]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [123, 56, 124],
+      "textureIndices": [1, 21, 0]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [124, 125, 123],
+      "textureIndices": [0, 60, 1]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [126, 56, 127],
+      "textureIndices": [1, 25, 20]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [127, 128, 126],
+      "textureIndices": [20, 3, 1]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [129, 56, 130],
+      "textureIndices": [19, 25, 20]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [130, 131, 129],
+      "textureIndices": [20, 3, 19]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [77, 132, 86],
+      "textureIndices": [61, 62, 63]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [77, 86, 85],
+      "textureIndices": [64, 65, 66]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [77, 85, 132],
+      "textureIndices": [61, 67, 62]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [86, 133, 87],
+      "textureIndices": [68, 66, 69]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [85, 84, 115],
+      "textureIndices": [16, 15, 34]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [132, 85, 115],
+      "textureIndices": [70, 71, 72]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [115, 122, 87],
+      "textureIndices": [73, 57, 59]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [115, 119, 122],
+      "textureIndices": [74, 75, 76]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [49, 121, 122],
+      "textureIndices": [77, 78, 79]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [49, 122, 119],
+      "textureIndices": [77, 79, 80]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [49, 119, 121],
+      "textureIndices": [77, 80, 78]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [134, 135, 136],
+      "textureIndices": [38, 81, 82]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [117, 134, 136],
+      "textureIndices": [35, 83, 84]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [114, 119, 115],
+      "textureIndices": [39, 75, 74]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [137, 77, 138],
+      "textureIndices": [1, 25, 85]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [138, 139, 137],
+      "textureIndices": [85, 3, 1]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [140, 77, 141],
+      "textureIndices": [1, 21, 20]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [141, 142, 140],
+      "textureIndices": [20, 3, 1]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [143, 77, 144],
+      "textureIndices": [1, 21, 20]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [144, 145, 143],
+      "textureIndices": [20, 3, 1]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [56, 133, 86],
+      "textureIndices": [86, 46, 87]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [56, 86, 132],
+      "textureIndices": [86, 87, 88]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [56, 132, 133],
+      "textureIndices": [89, 70, 90]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [87, 133, 132],
+      "textureIndices": [91, 92, 93]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [132, 115, 87],
+      "textureIndices": [93, 94, 91]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [122, 87, 84],
+      "textureIndices": [95, 18, 15]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [122, 84, 87],
+      "textureIndices": [95, 15, 18]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [146, 118, 117],
+      "textureIndices": [96, 36, 38]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [147, 118, 146],
+      "textureIndices": [97, 36, 96]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [146, 117, 136],
+      "textureIndices": [98, 35, 84]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [114, 118, 134],
+      "textureIndices": [47, 36, 38]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [117, 115, 84],
+      "textureIndices": [35, 34, 15]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [84, 114, 134],
+      "textureIndices": [48, 47, 38]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [84, 134, 117],
+      "textureIndices": [15, 83, 35]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [135, 134, 118],
+      "textureIndices": [81, 38, 36]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [118, 147, 135],
+      "textureIndices": [36, 99, 81]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [135, 148, 149],
+      "textureIndices": [81, 100, 101]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [135, 147, 148],
+      "textureIndices": [81, 99, 100]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [147, 150, 148],
+      "textureIndices": [99, 102, 100]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [147, 151, 150],
+      "textureIndices": [97, 103, 104]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [152, 150, 151],
+      "textureIndices": [105, 104, 103]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [152, 148, 150],
+      "textureIndices": [106, 100, 102]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [146, 136, 153],
+      "textureIndices": [98, 84, 107]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [136, 135, 149],
+      "textureIndices": [82, 81, 101]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [136, 149, 154],
+      "textureIndices": [82, 101, 108]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [136, 154, 153],
+      "textureIndices": [84, 109, 107]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [147, 146, 155],
+      "textureIndices": [97, 96, 110]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [147, 155, 151],
+      "textureIndices": [97, 110, 103]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [156, 157, 158],
+      "textureIndices": [111, 112, 113]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [156, 158, 159],
+      "textureIndices": [114, 115, 116]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [158, 157, 155],
+      "textureIndices": [113, 112, 110]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [158, 155, 146],
+      "textureIndices": [113, 110, 96]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [153, 159, 158],
+      "textureIndices": [107, 116, 115]
+    },
+    {
+      "surfaceIndex": 0,
+      "num_uvframes": 1,
+      "vertexIndices": [158, 146, 153],
+      "textureIndices": [115, 98, 107]
+    }
+  ],
+  "frames": [
+    {
+      "scale": [0.10102343559265137, 0.11208674311637878, 0.09652859717607498],
+      "translate": [-14.112151145935059, -11.790902137756348, -24.28040885925293],
+      "name": "stand000",
+      "verts": [[166, 37, 223, 145], [156, 62, 223, 145], [147, 43, 223, 1], [195, 61, 199, 146], [137, 26, 223, 79], [164, 35, 223, 79], [162, 0, 199, 80], [138, 63, 223, 233], [124, 40, 223, 233], [99, 67, 199, 234], [215, 155, 202, 222], [193, 138, 202, 222], [215, 135, 203, 1], [181, 172, 178, 223], [236, 134, 202, 156], [218, 154, 202, 156], [255, 164, 178, 157], [198, 123, 202, 57], [226, 119, 202, 57], [206, 89, 178, 58], [118, 90, 252, 1], [103, 112, 253, 1], [97, 94, 253, 1], [91, 74, 253, 90], [116, 88, 252, 90], [121, 53, 228, 91], [85, 111, 253, 244], [77, 86, 254, 244], [46, 108, 231, 245], [126, 195, 252, 134], [125, 221, 252, 134], [109, 209, 252, 1], [162, 208, 228, 135], [88, 216, 252, 13], [97, 191, 252, 13], [58, 194, 228, 14], [120, 226, 252, 200], [91, 221, 252, 200], [100, 255, 228, 201], [44, 143, 223, 79], [71, 154, 223, 79], [50, 163, 222, 1], [72, 119, 199, 80], [64, 180, 223, 200], [35, 176, 223, 200], [45, 210, 199, 201], [30, 171, 223, 13], [39, 145, 223, 13], [0, 149, 199, 14], [97, 94, 254, 0], [88, 118, 225, 84], [122, 109, 224, 29], [67, 92, 226, 128], [87, 67, 225, 183], [121, 77, 224, 238], [95, 94, 193, 1], [109, 209, 254, 0], [83, 217, 225, 117], [111, 237, 225, 73], [93, 186, 225, 172], [128, 186, 225, 227], [139, 217, 225, 18], [109, 209, 192, 1], [147, 42, 224, 0], [120, 51, 194, 117], [149, 70, 194, 73], [131, 20, 194, 172], [166, 20, 194, 227], [177, 51, 194, 18], [149, 43, 162, 1], [215, 135, 204, 0], [188, 144, 175, 117], [217, 163, 175, 73], [199, 113, 175, 172], [234, 113, 175, 227], [245, 144, 175, 18], [217, 135, 142, 1], [50, 162, 223, 0], [24, 171, 194, 117], [52, 190, 194, 73], [35, 140, 194, 172], [70, 140, 194, 227], [80, 171, 194, 18], [50, 162, 162, 1], [125, 125, 189, 150], [108, 159, 224, 124], [102, 159, 237, 152], [132, 123, 205, 177], [166, 37, 224, 23], [156, 61, 224, 23], [195, 60, 200, 22], [137, 26, 224, 221], [164, 35, 224, 221], [162, 0, 200, 220], [138, 63, 224, 122], [124, 39, 224, 122], [99, 66, 200, 121], [215, 155, 203, 100], [193, 138, 203, 100], [181, 172, 179, 99], [236, 134, 203, 45], [218, 154, 203, 45], [255, 164, 179, 44], [198, 122, 203, 199], [226, 119, 203, 199], [206, 89, 179, 198], [118, 90, 253, 0], [103, 112, 254, 0], [91, 74, 254, 232], [116, 88, 254, 232], [121, 53, 229, 220], [85, 110, 255, 122], [76, 85, 255, 122], [46, 108, 232, 121], [147, 116, 184, 217], [139, 136, 187, 61], [146, 124, 164, 38], [136, 100, 94, 95], [169, 88, 90, 7], [163, 104, 224, 7], [160, 104, 215, 223], [148, 111, 223, 150], [156, 111, 232, 77], [126, 194, 254, 12], [125, 221, 254, 12], [162, 208, 230, 11], [88, 216, 254, 155], [97, 191, 254, 155], [58, 194, 230, 154], [120, 225, 254, 78], [91, 220, 254, 78], [100, 255, 230, 77], [109, 167, 228, 50], [108, 163, 239, 252], [139, 67, 95, 184], [136, 79, 51, 205], [108, 87, 14, 163], [44, 143, 224, 221], [71, 153, 224, 221], [72, 118, 201, 220], [64, 179, 224, 78], [35, 176, 224, 78], [45, 210, 201, 77], [30, 170, 224, 155], [39, 145, 224, 155], [0, 149, 201, 154], [128, 129, 34, 76], [156, 96, 41, 8], [161, 81, 0, 217], [125, 84, 0, 195], [177, 100, 19, 11], [158, 115, 0, 53], [212, 104, 0, 11], [105, 112, 0, 131], [67, 67, 0, 188], [130, 140, 0, 31], [120, 241, 0, 56], [121, 163, 0, 20], [110, 154, 19, 78], [96, 155, 0, 130]],
+      "unknown": [0, 0, 0]
+    },
+    {
+      "scale": [0.10102343559265137, 0.11208674311637878, 0.09652859717607498],
+      "translate": [-14.112151145935059, -11.790902137756348, -24.28040885925293],
+      "name": "stand001",
+      "verts": [[166, 37, 223, 145], [156, 62, 223, 145], [147, 43, 223, 1], [195, 61, 199, 146], [137, 26, 223, 79], [164, 35, 223, 79], [162, 0, 199, 80], [138, 63, 223, 233], [124, 40, 223, 233], [99, 67, 199, 234], [215, 155, 202, 222], [193, 138, 202, 222], [215, 135, 203, 1], [181, 172, 178, 223], [236, 134, 202, 156], [218, 154, 202, 156], [255, 164, 178, 157], [198, 123, 202, 57], [226, 119, 202, 57], [206, 89, 178, 58], [118, 90, 252, 1], [103, 112, 253, 1], [97, 94, 253, 1], [91, 74, 253, 90], [116, 88, 252, 90], [121, 53, 228, 91], [85, 111, 253, 244], [77, 86, 254, 244], [46, 108, 231, 245], [126, 195, 252, 134], [125, 221, 252, 134], [109, 209, 252, 1], [162, 208, 228, 135], [88, 216, 252, 13], [97, 191, 252, 13], [58, 194, 228, 14], [120, 226, 252, 200], [91, 221, 252, 200], [100, 255, 228, 201], [44, 143, 223, 79], [71, 154, 223, 79], [50, 163, 222, 1], [72, 119, 199, 80], [64, 180, 223, 200], [35, 176, 223, 200], [45, 210, 199, 201], [30, 171, 223, 13], [39, 145, 223, 13], [0, 149, 199, 14], [97, 94, 254, 0], [88, 118, 225, 84], [122, 109, 224, 29], [67, 92, 226, 128], [87, 67, 225, 183], [121, 77, 224, 238], [95, 94, 193, 1], [109, 209, 254, 0], [83, 217, 225, 117], [111, 237, 225, 73], [93, 186, 225, 172], [128, 186, 225, 227], [139, 217, 225, 18], [109, 209, 192, 1], [147, 42, 224, 0], [120, 51, 194, 117], [149, 70, 194, 73], [131, 20, 194, 172], [166, 20, 194, 227], [177, 51, 194, 18], [149, 43, 162, 1], [215, 135, 202, 0], [214, 136, 202, 117], [215, 136, 202, 73], [214, 135, 202, 172], [215, 135, 202, 227], [215, 136, 202, 18], [215, 135, 201, 1], [50, 162, 223, 0], [24, 171, 194, 117], [52, 190, 194, 73], [35, 140, 194, 172], [70, 140, 194, 227], [80, 171, 194, 18], [50, 162, 162, 1], [125, 125, 189, 150], [108, 159, 224, 124], [102, 159, 237, 152], [132, 123, 205, 177], [166, 37, 224, 23], [156, 61, 224, 23], [195, 60, 200, 22], [137, 26, 224, 221], [164, 35, 224, 221], [162, 0, 200, 220], [138, 63, 224, 122], [124, 39, 224, 122], [99, 66, 200, 121], [215, 155, 203, 100], [193, 138, 203, 100], [181, 172, 179, 99], [236, 134, 203, 45], [218, 154, 203, 45], [255, 164, 179, 44], [198, 122, 203, 199], [226, 119, 203, 199], [206, 89, 179, 198], [118, 90, 253, 0], [103, 112, 254, 0], [91, 74, 254, 232], [116, 88, 254, 232], [121, 53, 229, 220], [85, 110, 255, 122], [76, 85, 255, 122], [46, 108, 232, 121], [147, 116, 184, 217], [139, 136, 187, 61], [146, 124, 164, 38], [136, 100, 94, 95], [169, 88, 90, 7], [163, 104, 224, 7], [160, 104, 215, 223], [148, 111, 223, 150], [156, 111, 232, 77], [126, 194, 254, 12], [125, 221, 254, 12], [162, 208, 230, 11], [88, 216, 254, 155], [97, 191, 254, 155], [58, 194, 230, 154], [120, 225, 254, 78], [91, 220, 254, 78], [100, 255, 230, 77], [109, 167, 228, 50], [108, 163, 239, 252], [139, 67, 95, 184], [136, 79, 51, 205], [108, 87, 14, 163], [44, 143, 224, 221], [71, 153, 224, 221], [72, 118, 201, 220], [64, 179, 224, 78], [35, 176, 224, 78], [45, 210, 201, 77], [30, 170, 224, 155], [39, 145, 224, 155], [0, 149, 201, 154], [128, 129, 34, 76], [156, 96, 41, 8], [161, 81, 0, 217], [125, 84, 0, 195], [177, 100, 19, 11], [158, 115, 0, 53], [212, 104, 0, 11], [105, 112, 0, 131], [67, 67, 0, 188], [130, 140, 0, 31], [120, 241, 0, 56], [121, 163, 0, 20], [110, 154, 19, 78], [96, 155, 0, 130]],
+      "unknown": [0, 0, 0]
+    },
+    {
+      "scale": [0.10102343559265137, 0.11208674311637878, 0.09652859717607498],
+      "translate": [-14.112151145935059, -11.790902137756348, -24.28040885925293],
+      "name": "stand002",
+      "verts": [[166, 37, 223, 145], [156, 62, 223, 145], [147, 43, 223, 1], [195, 61, 199, 146], [137, 26, 223, 79], [164, 35, 223, 79], [162, 0, 199, 80], [138, 63, 223, 233], [124, 40, 223, 233], [99, 67, 199, 234], [215, 155, 202, 222], [193, 138, 202, 222], [215, 135, 203, 1], [181, 172, 178, 223], [236, 134, 202, 156], [218, 154, 202, 156], [255, 164, 178, 157], [198, 123, 202, 57], [226, 119, 202, 57], [206, 89, 178, 58], [118, 90, 252, 1], [103, 112, 253, 1], [97, 94, 253, 1], [91, 74, 253, 90], [116, 88, 252, 90], [121, 53, 228, 91], [85, 111, 253, 244], [77, 86, 254, 244], [46, 108, 231, 245], [126, 195, 252, 134], [125, 221, 252, 134], [109, 209, 252, 1], [162, 208, 228, 135], [88, 216, 252, 13], [97, 191, 252, 13], [58, 194, 228, 14], [120, 226, 252, 200], [91, 221, 252, 200], [100, 255, 228, 201], [44, 143, 223, 79], [71, 154, 223, 79], [50, 163, 222, 1], [72, 119, 199, 80], [64, 180, 223, 200], [35, 176, 223, 200], [45, 210, 199, 201], [30, 171, 223, 13], [39, 145, 223, 13], [0, 149, 199, 14], [97, 94, 254, 0], [88, 118, 225, 84], [122, 109, 224, 29], [67, 92, 226, 128], [87, 67, 225, 183], [121, 77, 224, 238], [95, 94, 193, 1], [108, 209, 253, 0], [108, 209, 252, 117], [108, 210, 252, 73], [108, 209, 252, 172], [109, 209, 252, 227], [109, 209, 252, 18], [108, 209, 252, 1], [147, 42, 224, 0], [120, 51, 194, 117], [149, 70, 194, 73], [131, 20, 194, 172], [166, 20, 194, 227], [177, 51, 194, 18], [149, 43, 162, 1], [215, 135, 202, 0], [214, 136, 202, 117], [215, 136, 202, 73], [214, 135, 202, 172], [215, 135, 202, 227], [215, 136, 202, 18], [215, 135, 201, 1], [50, 162, 223, 0], [24, 171, 194, 117], [52, 190, 194, 73], [35, 140, 194, 172], [70, 140, 194, 227], [80, 171, 194, 18], [50, 162, 162, 1], [125, 125, 189, 150], [108, 159, 224, 124], [102, 159, 237, 152], [132, 123, 205, 177], [166, 37, 224, 23], [156, 61, 224, 23], [195, 60, 200, 22], [137, 26, 224, 221], [164, 35, 224, 221], [162, 0, 200, 220], [138, 63, 224, 122], [124, 39, 224, 122], [99, 66, 200, 121], [215, 155, 203, 100], [193, 138, 203, 100], [181, 172, 179, 99], [236, 134, 203, 45], [218, 154, 203, 45], [255, 164, 179, 44], [198, 122, 203, 199], [226, 119, 203, 199], [206, 89, 179, 198], [118, 90, 253, 0], [103, 112, 254, 0], [91, 74, 254, 232], [116, 88, 254, 232], [121, 53, 229, 220], [85, 110, 255, 122], [76, 85, 255, 122], [46, 108, 232, 121], [147, 116, 184, 217], [139, 136, 187, 61], [146, 124, 164, 38], [136, 100, 94, 95], [169, 88, 90, 7], [163, 104, 224, 7], [160, 104, 215, 223], [148, 111, 223, 150], [156, 111, 232, 77], [126, 194, 254, 12], [125, 221, 254, 12], [162, 208, 230, 11], [88, 216, 254, 155], [97, 191, 254, 155], [58, 194, 230, 154], [120, 225, 254, 78], [91, 220, 254, 78], [100, 255, 230, 77], [109, 167, 228, 50], [108, 163, 239, 252], [139, 67, 95, 184], [136, 79, 51, 205], [108, 87, 14, 163], [44, 143, 224, 221], [71, 153, 224, 221], [72, 118, 201, 220], [64, 179, 224, 78], [35, 176, 224, 78], [45, 210, 201, 77], [30, 170, 224, 155], [39, 145, 224, 155], [0, 149, 201, 154], [128, 129, 34, 76], [156, 96, 41, 8], [161, 81, 0, 217], [125, 84, 0, 195], [177, 100, 19, 11], [158, 115, 0, 53], [212, 104, 0, 11], [105, 112, 0, 131], [67, 67, 0, 188], [130, 140, 0, 31], [120, 241, 0, 56], [121, 163, 0, 20], [110, 154, 19, 78], [96, 155, 0, 130]],
+      "unknown": [0, 0, 0]
+    },
+    {
+      "scale": [0.10102343559265137, 0.11208674311637878, 0.09652859717607498],
+      "translate": [-14.112151145935059, -11.790902137756348, -24.28040885925293],
+      "name": "stand003",
+      "verts": [[166, 37, 223, 145], [156, 62, 223, 145], [147, 43, 223, 1], [195, 61, 199, 146], [137, 26, 223, 79], [164, 35, 223, 79], [162, 0, 199, 80], [138, 63, 223, 233], [124, 40, 223, 233], [99, 67, 199, 234], [215, 155, 202, 222], [193, 138, 202, 222], [215, 135, 203, 1], [181, 172, 178, 223], [236, 134, 202, 156], [218, 154, 202, 156], [255, 164, 178, 157], [198, 123, 202, 57], [226, 119, 202, 57], [206, 89, 178, 58], [118, 90, 252, 1], [103, 112, 253, 1], [97, 94, 253, 1], [91, 74, 253, 90], [116, 88, 252, 90], [121, 53, 228, 91], [85, 111, 253, 244], [77, 86, 254, 244], [46, 108, 231, 245], [126, 195, 252, 134], [125, 221, 252, 134], [109, 209, 252, 1], [162, 208, 228, 135], [88, 216, 252, 13], [97, 191, 252, 13], [58, 194, 228, 14], [120, 226, 252, 200], [91, 221, 252, 200], [100, 255, 228, 201], [44, 143, 223, 79], [71, 154, 223, 79], [50, 163, 222, 1], [72, 119, 199, 80], [64, 180, 223, 200], [35, 176, 223, 200], [45, 210, 199, 201], [30, 171, 223, 13], [39, 145, 223, 13], [0, 149, 199, 14], [97, 94, 254, 0], [88, 118, 225, 84], [122, 109, 224, 29], [67, 92, 226, 128], [87, 67, 225, 183], [121, 77, 224, 238], [95, 94, 193, 1], [108, 209, 253, 0], [108, 209, 252, 117], [108, 210, 252, 73], [108, 209, 252, 172], [109, 209, 252, 227], [109, 209, 252, 18], [108, 209, 252, 1], [147, 42, 224, 0], [120, 51, 194, 117], [149, 70, 194, 73], [131, 20, 194, 172], [166, 20, 194, 227], [177, 51, 194, 18], [149, 43, 162, 1], [215, 135, 202, 0], [214, 136, 202, 117], [215, 136, 202, 73], [214, 135, 202, 172], [215, 135, 202, 227], [215, 136, 202, 18], [215, 135, 201, 1], [50, 163, 223, 0], [50, 163, 222, 117], [50, 163, 222, 73], [50, 162, 222, 172], [51, 162, 222, 227], [51, 163, 222, 18], [50, 163, 222, 1], [125, 125, 189, 150], [108, 159, 224, 124], [102, 159, 237, 152], [132, 123, 205, 177], [166, 37, 224, 23], [156, 61, 224, 23], [195, 60, 200, 22], [137, 26, 224, 221], [164, 35, 224, 221], [162, 0, 200, 220], [138, 63, 224, 122], [124, 39, 224, 122], [99, 66, 200, 121], [215, 155, 203, 100], [193, 138, 203, 100], [181, 172, 179, 99], [236, 134, 203, 45], [218, 154, 203, 45], [255, 164, 179, 44], [198, 122, 203, 199], [226, 119, 203, 199], [206, 89, 179, 198], [118, 90, 253, 0], [103, 112, 254, 0], [91, 74, 254, 232], [116, 88, 254, 232], [121, 53, 229, 220], [85, 110, 255, 122], [76, 85, 255, 122], [46, 108, 232, 121], [147, 116, 184, 217], [139, 136, 187, 61], [146, 124, 164, 38], [136, 100, 94, 95], [169, 88, 90, 7], [163, 104, 224, 7], [160, 104, 215, 223], [148, 111, 223, 150], [156, 111, 232, 77], [126, 194, 254, 12], [125, 221, 254, 12], [162, 208, 230, 11], [88, 216, 254, 155], [97, 191, 254, 155], [58, 194, 230, 154], [120, 225, 254, 78], [91, 220, 254, 78], [100, 255, 230, 77], [109, 167, 228, 50], [108, 163, 239, 252], [139, 67, 95, 184], [136, 79, 51, 205], [108, 87, 14, 163], [44, 143, 224, 221], [71, 153, 224, 221], [72, 118, 201, 220], [64, 179, 224, 78], [35, 176, 224, 78], [45, 210, 201, 77], [30, 170, 224, 155], [39, 145, 224, 155], [0, 149, 201, 154], [128, 129, 34, 76], [156, 96, 41, 8], [161, 81, 0, 217], [125, 84, 0, 195], [177, 100, 19, 11], [158, 115, 0, 53], [212, 104, 0, 11], [105, 112, 0, 131], [67, 67, 0, 188], [130, 140, 0, 31], [120, 241, 0, 56], [121, 163, 0, 20], [110, 154, 19, 78], [96, 155, 0, 130]],
+      "unknown": [0, 0, 0]
+    },
+    {
+      "scale": [0.10102343559265137, 0.11208674311637878, 0.09652859717607498],
+      "translate": [-14.112151145935059, -11.790902137756348, -24.28040885925293],
+      "name": "stand004",
+      "verts": [[166, 37, 223, 145], [156, 62, 223, 145], [147, 43, 223, 1], [195, 61, 199, 146], [137, 26, 223, 79], [164, 35, 223, 79], [162, 0, 199, 80], [138, 63, 223, 233], [124, 40, 223, 233], [99, 67, 199, 234], [215, 155, 202, 222], [193, 138, 202, 222], [215, 135, 203, 1], [181, 172, 178, 223], [236, 134, 202, 156], [218, 154, 202, 156], [255, 164, 178, 157], [198, 123, 202, 57], [226, 119, 202, 57], [206, 89, 178, 58], [118, 90, 252, 1], [103, 112, 253, 1], [97, 94, 253, 1], [91, 74, 253, 90], [116, 88, 252, 90], [121, 53, 228, 91], [85, 111, 253, 244], [77, 86, 254, 244], [46, 108, 231, 245], [126, 195, 252, 134], [125, 221, 252, 134], [109, 209, 252, 1], [162, 208, 228, 135], [88, 216, 252, 13], [97, 191, 252, 13], [58, 194, 228, 14], [120, 226, 252, 200], [91, 221, 252, 200], [100, 255, 228, 201], [44, 143, 223, 79], [71, 154, 223, 79], [50, 163, 222, 1], [72, 119, 199, 80], [64, 180, 223, 200], [35, 176, 223, 200], [45, 210, 199, 201], [30, 171, 223, 13], [39, 145, 223, 13], [0, 149, 199, 14], [97, 94, 254, 0], [88, 118, 225, 84], [122, 109, 224, 29], [67, 92, 226, 128], [87, 67, 225, 183], [121, 77, 224, 238], [95, 94, 193, 1], [108, 209, 253, 0], [108, 209, 252, 117], [108, 210, 252, 73], [108, 209, 252, 172], [109, 209, 252, 227], [109, 209, 252, 18], [108, 209, 252, 1], [147, 42, 224, 0], [146, 42, 223, 117], [147, 43, 223, 73], [146, 41, 223, 172], [147, 41, 223, 227], [148, 42, 223, 18], [147, 42, 221, 1], [215, 135, 202, 0], [214, 136, 202, 117], [215, 136, 202, 73], [214, 135, 202, 172], [215, 135, 202, 227], [215, 136, 202, 18], [215, 135, 201, 1], [50, 163, 223, 0], [50, 163, 222, 117], [50, 163, 222, 73], [50, 162, 222, 172], [51, 162, 222, 227], [51, 163, 222, 18], [50, 163, 222, 1], [125, 125, 189, 150], [108, 159, 224, 124], [102, 159, 237, 152], [132, 123, 205, 177], [166, 37, 224, 23], [156, 61, 224, 23], [195, 60, 200, 22], [137, 26, 224, 221], [164, 35, 224, 221], [162, 0, 200, 220], [138, 63, 224, 122], [124, 39, 224, 122], [99, 66, 200, 121], [215, 155, 203, 100], [193, 138, 203, 100], [181, 172, 179, 99], [236, 134, 203, 45], [218, 154, 203, 45], [255, 164, 179, 44], [198, 122, 203, 199], [226, 119, 203, 199], [206, 89, 179, 198], [118, 90, 253, 0], [103, 112, 254, 0], [91, 74, 254, 232], [116, 88, 254, 232], [121, 53, 229, 220], [85, 110, 255, 122], [76, 85, 255, 122], [46, 108, 232, 121], [147, 116, 184, 217], [139, 136, 187, 61], [146, 124, 164, 38], [136, 100, 94, 95], [169, 88, 90, 7], [163, 104, 224, 7], [160, 104, 215, 223], [148, 111, 223, 150], [156, 111, 232, 77], [126, 194, 254, 12], [125, 221, 254, 12], [162, 208, 230, 11], [88, 216, 254, 155], [97, 191, 254, 155], [58, 194, 230, 154], [120, 225, 254, 78], [91, 220, 254, 78], [100, 255, 230, 77], [109, 167, 228, 50], [108, 163, 239, 252], [139, 67, 95, 184], [136, 79, 51, 205], [108, 87, 14, 163], [44, 143, 224, 221], [71, 153, 224, 221], [72, 118, 201, 220], [64, 179, 224, 78], [35, 176, 224, 78], [45, 210, 201, 77], [30, 170, 224, 155], [39, 145, 224, 155], [0, 149, 201, 154], [128, 129, 34, 76], [156, 96, 41, 8], [161, 81, 0, 217], [125, 84, 0, 195], [177, 100, 19, 11], [158, 115, 0, 53], [212, 104, 0, 11], [105, 112, 0, 131], [67, 67, 0, 188], [130, 140, 0, 31], [120, 241, 0, 56], [121, 163, 0, 20], [110, 154, 19, 78], [96, 155, 0, 130]],
+      "unknown": [0, 0, 0]
+    },
+    {
+      "scale": [0.10102343559265137, 0.11208674311637878, 0.09652859717607498],
+      "translate": [-14.112151145935059, -11.790902137756348, -24.28040885925293],
+      "name": "stand005",
+      "verts": [[166, 37, 223, 145], [156, 62, 223, 145], [147, 43, 223, 1], [195, 61, 199, 146], [137, 26, 223, 79], [164, 35, 223, 79], [162, 0, 199, 80], [138, 63, 223, 233], [124, 40, 223, 233], [99, 67, 199, 234], [215, 155, 202, 222], [193, 138, 202, 222], [215, 135, 203, 1], [181, 172, 178, 223], [236, 134, 202, 156], [218, 154, 202, 156], [255, 164, 178, 157], [198, 123, 202, 57], [226, 119, 202, 57], [206, 89, 178, 58], [118, 90, 252, 1], [103, 112, 253, 1], [97, 94, 253, 1], [91, 74, 253, 90], [116, 88, 252, 90], [121, 53, 228, 91], [85, 111, 253, 244], [77, 86, 254, 244], [46, 108, 231, 245], [126, 195, 252, 134], [125, 221, 252, 134], [109, 209, 252, 1], [162, 208, 228, 135], [88, 216, 252, 13], [97, 191, 252, 13], [58, 194, 228, 14], [120, 226, 252, 200], [91, 221, 252, 200], [100, 255, 228, 201], [44, 143, 223, 79], [71, 154, 223, 79], [50, 163, 222, 1], [72, 119, 199, 80], [64, 180, 223, 200], [35, 176, 223, 200], [45, 210, 199, 201], [30, 171, 223, 13], [39, 145, 223, 13], [0, 149, 199, 14], [97, 94, 253, 0], [97, 95, 252, 84], [97, 95, 252, 29], [96, 94, 253, 128], [97, 94, 252, 183], [97, 94, 252, 238], [97, 94, 252, 1], [108, 209, 253, 0], [108, 209, 252, 117], [108, 210, 252, 73], [108, 209, 252, 172], [109, 209, 252, 227], [109, 209, 252, 18], [108, 209, 252, 1], [147, 42, 224, 0], [146, 42, 223, 117], [147, 43, 223, 73], [146, 41, 223, 172], [147, 41, 223, 227], [148, 42, 223, 18], [147, 42, 221, 1], [215, 135, 202, 0], [214, 136, 202, 117], [215, 136, 202, 73], [214, 135, 202, 172], [215, 135, 202, 227], [215, 136, 202, 18], [215, 135, 201, 1], [50, 163, 223, 0], [50, 163, 222, 117], [50, 163, 222, 73], [50, 162, 222, 172], [51, 162, 222, 227], [51, 163, 222, 18], [50, 163, 222, 1], [125, 125, 189, 150], [108, 159, 224, 124], [102, 159, 237, 152], [132, 123, 205, 177], [166, 37, 224, 23], [156, 61, 224, 23], [195, 60, 200, 22], [137, 26, 224, 221], [164, 35, 224, 221], [162, 0, 200, 220], [138, 63, 224, 122], [124, 39, 224, 122], [99, 66, 200, 121], [215, 155, 203, 100], [193, 138, 203, 100], [181, 172, 179, 99], [236, 134, 203, 45], [218, 154, 203, 45], [255, 164, 179, 44], [198, 122, 203, 199], [226, 119, 203, 199], [206, 89, 179, 198], [118, 90, 253, 0], [103, 112, 254, 0], [91, 74, 254, 232], [116, 88, 254, 232], [121, 53, 229, 220], [85, 110, 255, 122], [76, 85, 255, 122], [46, 108, 232, 121], [147, 116, 184, 217], [139, 136, 187, 61], [146, 124, 164, 38], [136, 100, 94, 95], [169, 88, 90, 7], [163, 104, 224, 7], [160, 104, 215, 223], [148, 111, 223, 150], [156, 111, 232, 77], [126, 194, 254, 12], [125, 221, 254, 12], [162, 208, 230, 11], [88, 216, 254, 155], [97, 191, 254, 155], [58, 194, 230, 154], [120, 225, 254, 78], [91, 220, 254, 78], [100, 255, 230, 77], [109, 167, 228, 50], [108, 163, 239, 252], [139, 67, 95, 184], [136, 79, 51, 205], [108, 87, 14, 163], [44, 143, 224, 221], [71, 153, 224, 221], [72, 118, 201, 220], [64, 179, 224, 78], [35, 176, 224, 78], [45, 210, 201, 77], [30, 170, 224, 155], [39, 145, 224, 155], [0, 149, 201, 154], [128, 129, 34, 76], [156, 96, 41, 8], [161, 81, 0, 217], [125, 84, 0, 195], [177, 100, 19, 11], [158, 115, 0, 53], [212, 104, 0, 11], [105, 112, 0, 131], [67, 67, 0, 188], [130, 140, 0, 31], [120, 241, 0, 56], [121, 163, 0, 20], [110, 154, 19, 78], [96, 155, 0, 130]],
+      "unknown": [0, 0, 0]
+    }
+  ],
+  "glCommands": [
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[1, 0.68359375, 0.26171875], [2, 0.91796875, 0.09765625], [0, 0.99609375, 0.37109375], [3, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[5, 0.68359375, 0.26171875], [2, 0.91796875, 0.09765625], [4, 0.99609375, 0.37109375], [6, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[8, 0.68359375, 0.26171875], [2, 0.91796875, 0.09765625], [7, 0.99609375, 0.37109375], [9, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[11, 0.68359375, 0.26171875], [12, 0.91796875, 0.09765625], [10, 0.99609375, 0.37109375], [13, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[15, 0.68359375, 0.26171875], [12, 0.91796875, 0.09765625], [14, 0.99609375, 0.37109375], [16, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[18, 0.68359375, 0.26171875], [12, 0.91796875, 0.09765625], [17, 0.99609375, 0.37109375], [19, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[20, 0.73828125, 0.71484375], [21, 0.90234375, 0.51171875], [22, 0.98828125, 0.73828125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[24, 0.68359375, 0.26171875], [22, 0.91796875, 0.09765625], [23, 0.99609375, 0.37109375], [25, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[27, 0.68359375, 0.26171875], [22, 0.91796875, 0.09765625], [26, 0.99609375, 0.37109375], [28, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[30, 0.68359375, 0.26171875], [31, 0.91796875, 0.09765625], [29, 0.99609375, 0.37109375], [32, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[34, 0.68359375, 0.26171875], [31, 0.91796875, 0.09765625], [33, 0.99609375, 0.37109375], [35, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[37, 0.68359375, 0.26171875], [31, 0.91796875, 0.09765625], [36, 0.99609375, 0.37109375], [38, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[40, 0.68359375, 0.26171875], [41, 0.91796875, 0.09765625], [39, 0.99609375, 0.37109375], [42, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[44, 0.68359375, 0.26171875], [41, 0.91796875, 0.09765625], [43, 0.99609375, 0.37109375], [45, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[47, 0.68359375, 0.26171875], [41, 0.91796875, 0.09765625], [46, 0.99609375, 0.37109375], [48, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": true,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[49, 0.30078125, 0.47265625], [50, 0.48828125, 0.62890625], [51, 0.19140625, 0.70703125], [55, 0.30078125, 0.47265625], [54, 0.05078125, 0.46484375], [53, 0.23828125, 0.23828125], [49, 0.30078125, 0.47265625], [52, 0.51171875, 0.35546875], [50, 0.48828125, 0.62890625], [55, 0.30078125, 0.47265625]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[49, 0.30078125, 0.47265625], [51, 0.19140625, 0.70703125], [54, 0.05078125, 0.46484375]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[55, 0.30078125, 0.47265625], [52, 0.51171875, 0.35546875], [53, 0.23828125, 0.23828125]]
+    },
+    {
+      "strip": true,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[56, 0.30859375, 0.47265625], [57, 0.51171875, 0.34765625], [58, 0.48828125, 0.62890625], [62, 0.30859375, 0.47265625], [61, 0.19140625, 0.70703125], [60, 0.05078125, 0.46484375], [56, 0.30859375, 0.47265625], [59, 0.23828125, 0.23828125], [57, 0.51171875, 0.34765625], [62, 0.30859375, 0.47265625]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[56, 0.30859375, 0.47265625], [58, 0.48828125, 0.62890625], [61, 0.19140625, 0.70703125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[62, 0.30859375, 0.47265625], [59, 0.23828125, 0.23828125], [60, 0.05078125, 0.46484375]]
+    },
+    {
+      "strip": true,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[63, 0.30078125, 0.47265625], [64, 0.51171875, 0.34765625], [65, 0.48828125, 0.62890625], [69, 0.30078125, 0.47265625], [68, 0.19140625, 0.70703125], [67, 0.05078125, 0.46484375], [63, 0.30078125, 0.47265625], [66, 0.23828125, 0.23828125], [64, 0.51171875, 0.34765625], [69, 0.30078125, 0.47265625]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[63, 0.30078125, 0.47265625], [65, 0.48828125, 0.62890625], [68, 0.19140625, 0.70703125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[69, 0.30078125, 0.47265625], [66, 0.23828125, 0.23828125], [67, 0.05078125, 0.46484375]]
+    },
+    {
+      "strip": true,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[70, 0.30078125, 0.47265625], [71, 0.23828125, 0.23828125], [72, 0.51171875, 0.35546875], [76, 0.30078125, 0.47265625], [75, 0.48828125, 0.62890625], [74, 0.19140625, 0.70703125], [70, 0.30078125, 0.47265625], [73, 0.05078125, 0.46484375], [71, 0.23828125, 0.23828125], [76, 0.30078125, 0.47265625]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[70, 0.30078125, 0.47265625], [72, 0.51171875, 0.35546875], [75, 0.48828125, 0.62890625]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[76, 0.30078125, 0.47265625], [73, 0.05078125, 0.46484375], [74, 0.19140625, 0.70703125]]
+    },
+    {
+      "strip": true,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[77, 0.30078125, 0.47265625], [78, 0.05078125, 0.46484375], [79, 0.23828125, 0.23828125], [83, 0.30078125, 0.47265625], [82, 0.51171875, 0.35546875], [81, 0.48828125, 0.62890625], [77, 0.30078125, 0.47265625], [80, 0.19140625, 0.70703125], [78, 0.05078125, 0.46484375], [83, 0.30078125, 0.47265625]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[77, 0.30078125, 0.47265625], [79, 0.23828125, 0.23828125], [82, 0.51171875, 0.35546875]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[83, 0.30078125, 0.47265625], [80, 0.19140625, 0.70703125], [81, 0.48828125, 0.62890625]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[84, 0.58984375, 0.30078125], [85, 0.50390625, 0.18359375], [86, 0.51171875, 0.14453125], [87, 0.58984375, 0.24609375], [121, 0.64453125, 0.17578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[88, 0.68359375, 0.26953125], [63, 0.91796875, 0.09765625], [89, 0.98828125, 0.37109375], [90, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[91, 0.68359375, 0.26953125], [63, 0.92578125, 0.09765625], [92, 0.98828125, 0.37109375], [93, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[94, 0.68359375, 0.26953125], [63, 0.91796875, 0.09765625], [95, 0.98828125, 0.37109375], [96, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[97, 0.68359375, 0.26171875], [70, 0.92578125, 0.09765625], [98, 0.98828125, 0.37109375], [99, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[100, 0.68359375, 0.26171875], [70, 0.92578125, 0.09765625], [101, 0.98828125, 0.37109375], [102, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[103, 0.68359375, 0.26953125], [70, 0.91796875, 0.09765625], [104, 0.98828125, 0.37109375], [105, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[106, 0.90234375, 0.50390625], [49, 0.98046875, 0.73828125], [107, 0.73828125, 0.71484375]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[108, 0.69140625, 0.26171875], [49, 0.92578125, 0.09765625], [109, 0.99609375, 0.37109375], [110, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[111, 0.68359375, 0.26171875], [49, 0.91796875, 0.08984375], [112, 0.99609375, 0.37109375], [113, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[70, 0.59765625, 0.33203125], [114, 0.64453125, 0.55859375], [115, 0.58203125, 0.58984375], [116, 0.61328125, 0.56640625]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[70, 0.60546875, 0.29296875], [116, 0.64453125, 0.58984375], [114, 0.55859375, 0.56640625]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[117, 0.59765625, 0.62890625], [116, 0.57421875, 0.38671875], [115, 0.55078125, 0.31640625], [84, 0.58984375, 0.30078125], [134, 0.69921875, 0.62890625], [136, 0.72265625, 0.89453125], [146, 0.57421875, 0.82421875]]
+    },
+    {
+      "strip": true,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[116, 0.55078125, 0.33203125], [117, 0.55078125, 0.59765625], [118, 0.68359375, 0.61328125], [146, 0.49609375, 0.80859375], [147, 0.67578125, 0.79296875], [155, 0.44140625, 0.94140625], [151, 0.61328125, 0.94140625]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[116, 0.55078125, 0.33203125], [118, 0.68359375, 0.61328125], [114, 0.58203125, 0.26171875]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[119, 0.55859375, 0.59765625], [120, 0.58203125, 0.58203125], [63, 0.58984375, 0.26953125], [121, 0.63671875, 0.54296875]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[63, 0.57421875, 0.23828125], [120, 0.62109375, 0.41015625], [121, 0.56640625, 0.39453125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[84, 0.55859375, 0.23828125], [121, 0.64453125, 0.09765625], [114, 0.64453125, 0.26171875], [134, 0.55078125, 0.59765625]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[121, 0.64453125, 0.11328125], [120, 0.69921875, 0.16015625], [114, 0.64453125, 0.27734375]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[119, 0.60546875, 0.19140625], [114, 0.59765625, 0.32421875], [120, 0.62109375, 0.21484375]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[122, 0.59765625, 0.30078125], [121, 0.63671875, 0.30078125], [87, 0.62890625, 0.38671875], [115, 0.61328125, 0.46484375]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[123, 0.68359375, 0.26171875], [56, 0.92578125, 0.09765625], [124, 0.99609375, 0.37109375], [125, 0.73046875, 0.68359375]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[126, 0.68359375, 0.26171875], [56, 0.91796875, 0.08984375], [127, 0.98828125, 0.37109375], [128, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[129, 0.68359375, 0.26953125], [56, 0.91796875, 0.08984375], [130, 0.98828125, 0.37109375], [131, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[132, 0.65234375, 0.56640625], [86, 0.56640625, 0.54296875], [77, 0.58984375, 0.31640625], [85, 0.56640625, 0.56640625]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[77, 0.59765625, 0.25390625], [86, 0.62109375, 0.55859375], [85, 0.56640625, 0.58984375]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[86, 0.62890625, 0.57421875], [133, 0.56640625, 0.58984375], [87, 0.56640625, 0.28515625]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[85, 0.50390625, 0.18359375], [84, 0.58984375, 0.30078125], [115, 0.55078125, 0.31640625]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[132, 0.62890625, 0.63671875], [85, 0.63671875, 0.66796875], [115, 0.55859375, 0.77734375]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[119, 0.66015625, 0.11328125], [122, 0.62890625, 0.07421875], [115, 0.48828125, 0.24609375], [114, 0.58203125, 0.26171875]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[49, 0.63671875, 0.60546875], [121, 0.62890625, 0.80859375], [122, 0.58984375, 0.80078125], [119, 0.60546875, 0.83203125], [121, 0.62890625, 0.80859375]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[135, 0.58984375, 0.75390625], [136, 0.47265625, 0.87890625], [134, 0.55078125, 0.59765625], [118, 0.68359375, 0.61328125], [147, 0.68359375, 0.79296875], [148, 0.70703125, 0.94140625], [149, 0.54296875, 0.94140625], [136, 0.47265625, 0.87890625]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[137, 0.68359375, 0.26171875], [77, 0.91796875, 0.08984375], [138, 0.99609375, 0.37890625], [139, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[140, 0.68359375, 0.26171875], [77, 0.92578125, 0.09765625], [141, 0.98828125, 0.37109375], [142, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[143, 0.68359375, 0.26171875], [77, 0.92578125, 0.09765625], [144, 0.98828125, 0.37109375], [145, 0.73046875, 0.67578125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[56, 0.56640625, 0.33984375], [133, 0.63671875, 0.54296875], [86, 0.57421875, 0.58203125], [132, 0.62890625, 0.51953125]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[56, 0.61328125, 0.49609375], [132, 0.62890625, 0.63671875], [133, 0.66796875, 0.62109375]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[87, 0.64453125, 0.66796875], [133, 0.60546875, 0.44140625], [132, 0.56640625, 0.45703125], [115, 0.57421875, 0.69140625]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[122, 0.61328125, 0.16015625], [87, 0.58984375, 0.24609375], [84, 0.58984375, 0.30078125], [87, 0.58984375, 0.24609375]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[114, 0.64453125, 0.26171875], [118, 0.68359375, 0.61328125], [134, 0.55078125, 0.59765625]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[148, 0.70703125, 0.94140625], [147, 0.68359375, 0.79296875], [150, 0.77734375, 0.87109375], [152, 0.92578125, 0.94140625]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[150, 0.71484375, 0.87109375], [147, 0.67578125, 0.79296875], [151, 0.61328125, 0.94140625], [152, 0.80078125, 0.94140625]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[146, 0.57421875, 0.82421875], [136, 0.72265625, 0.89453125], [153, 0.65234375, 0.94140625], [158, 0.51171875, 0.87890625]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[136, 0.47265625, 0.87890625], [149, 0.54296875, 0.94140625], [154, 0.27734375, 0.94140625]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[136, 0.72265625, 0.89453125], [154, 0.82421875, 0.94140625], [153, 0.65234375, 0.94140625]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[158, 0.33984375, 0.87109375], [156, 0.12109375, 0.94140625], [157, 0.33984375, 0.94140625], [155, 0.44140625, 0.94140625], [146, 0.49609375, 0.80859375]]
+    },
+    {
+      "strip": false,
+      "skinIndex": 0,
+      "surfIndex": 0,
+      "verts": [[159, 0.52734375, 0.94140625], [156, 0.24609375, 0.94140625], [158, 0.51171875, 0.87890625], [153, 0.65234375, 0.94140625]]
+    }
+  ],
+  "surfaces": [
+    {
+      "name": "Auto_1",
+      "flags": 0,
+      "skinIndex": 0,
+      "skinWidth": 128,
+      "skinHeight": 128,
+      "numUVframes": 1
+    }
+  ],
+  "animSeqs": [
+    {
+      "name": "stand",
+      "startFrame": 0,
+      "endFrame": 5
+    }
+  ]
+}

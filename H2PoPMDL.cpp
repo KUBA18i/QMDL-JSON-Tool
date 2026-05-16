@@ -23,28 +23,29 @@ void JSON2H2PoPMDL(fs::path inpath, fs::path outpath, json jsonMDL) {
             return;
         }
 
-        int new_num_skins = jsonMDL["skins"].size();
-        int new_num_tris = jsonMDL["triangles"].size();
-        int new_num_frames = jsonMDL["frames"].size();
-        int new_num_st_verts = jsonMDL["UV"].size();//RAPO addition
-
-        int new_num_verts = -1;
+        h2pop_mdl_header_t new_header;
+        new_header.numSkins = jsonMDL["skins"].size();
+        new_header.numTris = jsonMDL["triangles"].size();
+        new_header.numFrames = jsonMDL["frames"].size();
+        new_header.numStVerts = jsonMDL["UV"].size(); //RAPO addition
+        
+        new_header.numVerts = -1;
         for (const auto& f : jsonMDL["frames"]) {
             if (f["group"].get<bool>() == false) {
                 auto& sframe = f["frame"][0];
-                if (new_num_verts == -1)
-                    new_num_verts = sframe["verts"].size();
-                else if (new_num_verts != sframe["verts"].size()) {
-                    cout << "Error: Frame " << (f["frame"][0]["name"]) << " has " << sframe["verts"].size() << " verts, but expected " << new_num_verts << endl;
+                if (new_header.numVerts == -1)
+                    new_header.numVerts = sframe["verts"].size();
+                else if (new_header.numVerts != sframe["verts"].size()) {
+                    cout << "Error: Frame " << (f["frame"][0]["name"]) << " has " << sframe["verts"].size() << " verts, but expected " << new_header.numVerts << endl;
                     return;
                 }
             }
             else {
                 for (const auto& gframe : f["frames"]) {
-                    if (new_num_verts == -1)
-                        new_num_verts = gframe["verts"].size();
-                    else if (gframe["verts"].size() != new_num_verts) {
-                        cout << "Error: Subframe " << gframe["name"] << " in group has " << gframe["verts"].size() << " verts, but expected " << new_num_verts << endl;
+                    if (new_header.numVerts == -1)
+                        new_header.numVerts = gframe["verts"].size();
+                    else if (gframe["verts"].size() != new_header.numVerts) {
+                        cout << "Error: Subframe " << gframe["name"] << " in group has " << gframe["verts"].size() << " verts, but expected " << new_header.numVerts << endl;
                         return;
                     }
                 }
@@ -52,36 +53,42 @@ void JSON2H2PoPMDL(fs::path inpath, fs::path outpath, json jsonMDL) {
         }
 
         outFile.write("RAPO", 4);
-        int version = 50;
-        outFile.write(reinterpret_cast<const char*>(&version), sizeof(version));
+        new_header.version = 50;
+        outFile.write(reinterpret_cast<const char*>(&new_header.version), sizeof(new_header.version));
 
         auto jheader = jsonMDL.at("header");
-        float scale[3] = { jheader["scale"][0], jheader["scale"][1], jheader["scale"][2] };
-        float trans[3] = { jheader["translate"][0], jheader["translate"][1], jheader["translate"][2] };
-        float bradius = jheader["boundingradius"];
-        float eye[3] = { jheader["eyeposition"][0], jheader["eyeposition"][1], jheader["eyeposition"][2] };
+        new_header.scale[0] = jheader["scale"][0];
+        new_header.scale[1] = jheader["scale"][1];
+        new_header.scale[2] = jheader["scale"][2];
+        new_header.translate[0] = jheader["translate"][0];
+        new_header.translate[1] = jheader["translate"][1];
+        new_header.translate[2] = jheader["translate"][2];
+        new_header.boundingRadius = jheader["boundingRadius"];
+        new_header.eyePosition[0] = jheader["eyePosition"][0];
+        new_header.eyePosition[1] = jheader["eyePosition"][1];
+        new_header.eyePosition[2] = jheader["eyePosition"][2];
 
-        outFile.write(reinterpret_cast<char*>(scale), sizeof(scale));
-        outFile.write(reinterpret_cast<char*>(trans), sizeof(trans));
-        outFile.write(reinterpret_cast<char*>(&bradius), sizeof(bradius));
-        outFile.write(reinterpret_cast<char*>(eye), sizeof(eye));
+        outFile.write(reinterpret_cast<char*>(&new_header.scale), sizeof(new_header.scale));
+        outFile.write(reinterpret_cast<char*>(&new_header.translate), sizeof(new_header.translate));
+        outFile.write(reinterpret_cast<char*>(&new_header.boundingRadius), sizeof(new_header.boundingRadius));
+        outFile.write(reinterpret_cast<char*>(&new_header.eyePosition), sizeof(new_header.eyePosition));
+        
+        new_header.skinWidth = jheader["skinWidth"];
+        new_header.skinHeight = jheader["skinHeight"];
+        new_header.syncType = jheader["syncType"];
+        new_header.flags = jheader["flags"];
+        new_header.size = jheader["size"];
 
-        int skinwidth = jheader["skinwidth"];
-        int skinheight = jheader["skinheight"];
-        int synctype = jheader["synctype"];
-        int flags = jheader["flags"];
-        float size = jheader["size"];
-
-        outFile.write(reinterpret_cast<char*>(&new_num_skins), sizeof(new_num_skins));
-        outFile.write(reinterpret_cast<char*>(&skinwidth), sizeof(skinwidth));
-        outFile.write(reinterpret_cast<char*>(&skinheight), sizeof(skinheight));
-        outFile.write(reinterpret_cast<char*>(&new_num_verts), sizeof(new_num_verts));
-        outFile.write(reinterpret_cast<char*>(&new_num_tris), sizeof(new_num_tris));
-        outFile.write(reinterpret_cast<char*>(&new_num_frames), sizeof(new_num_frames));
-        outFile.write(reinterpret_cast<char*>(&synctype), sizeof(synctype));
-        outFile.write(reinterpret_cast<char*>(&flags), sizeof(flags));
-        outFile.write(reinterpret_cast<char*>(&size), sizeof(size));
-        outFile.write(reinterpret_cast<char*>(&new_num_st_verts), sizeof(new_num_st_verts));//RAPO addition
+        outFile.write(reinterpret_cast<char*>(&new_header.numSkins), sizeof(new_header.numSkins));
+        outFile.write(reinterpret_cast<char*>(&new_header.skinWidth), sizeof(new_header.skinWidth));
+        outFile.write(reinterpret_cast<char*>(&new_header.skinHeight), sizeof(new_header.skinHeight));
+        outFile.write(reinterpret_cast<char*>(&new_header.numVerts), sizeof(new_header.numVerts));
+        outFile.write(reinterpret_cast<char*>(&new_header.numTris), sizeof(new_header.numTris));
+        outFile.write(reinterpret_cast<char*>(&new_header.numFrames), sizeof(new_header.numFrames));
+        outFile.write(reinterpret_cast<char*>(&new_header.syncType), sizeof(new_header.syncType));
+        outFile.write(reinterpret_cast<char*>(&new_header.flags), sizeof(new_header.flags));
+        outFile.write(reinterpret_cast<char*>(&new_header.size), sizeof(new_header.size));
+        outFile.write(reinterpret_cast<char*>(&new_header.numStVerts), sizeof(new_header.numStVerts)); //RAPO addition
 
         for (const auto& s : jsonMDL["skins"]) {
             int group = s["group"].get<bool>() ? 1 : 0;
@@ -179,30 +186,30 @@ H2PoP_MDL_file ParseH2PoPMDL(fs::path inpath) {
 
     inFile.read(reinterpret_cast<char*>(&NewMDL.header.scale), sizeof(NewMDL.header.scale));
     inFile.read(reinterpret_cast<char*>(&NewMDL.header.translate), sizeof(NewMDL.header.translate));
-    inFile.read(reinterpret_cast<char*>(&NewMDL.header.boundingradius), sizeof(NewMDL.header.boundingradius));
-    inFile.read(reinterpret_cast<char*>(&NewMDL.header.eyeposition), sizeof(NewMDL.header.eyeposition));
+    inFile.read(reinterpret_cast<char*>(&NewMDL.header.boundingRadius), sizeof(NewMDL.header.boundingRadius));
+    inFile.read(reinterpret_cast<char*>(&NewMDL.header.eyePosition), sizeof(NewMDL.header.eyePosition));
 
-    inFile.read(reinterpret_cast<char*>(&NewMDL.header.num_skins), sizeof(NewMDL.header.num_skins));
-    inFile.read(reinterpret_cast<char*>(&NewMDL.header.skinwidth), sizeof(NewMDL.header.skinwidth));
-    inFile.read(reinterpret_cast<char*>(&NewMDL.header.skinheight), sizeof(NewMDL.header.skinheight));
+    inFile.read(reinterpret_cast<char*>(&NewMDL.header.numSkins), sizeof(NewMDL.header.numSkins));
+    inFile.read(reinterpret_cast<char*>(&NewMDL.header.skinWidth), sizeof(NewMDL.header.skinWidth));
+    inFile.read(reinterpret_cast<char*>(&NewMDL.header.skinHeight), sizeof(NewMDL.header.skinHeight));
 
-    inFile.read(reinterpret_cast<char*>(&NewMDL.header.num_verts), sizeof(NewMDL.header.num_verts));
-    inFile.read(reinterpret_cast<char*>(&NewMDL.header.num_tris), sizeof(NewMDL.header.num_tris));
-    inFile.read(reinterpret_cast<char*>(&NewMDL.header.num_frames), sizeof(NewMDL.header.num_frames));
+    inFile.read(reinterpret_cast<char*>(&NewMDL.header.numVerts), sizeof(NewMDL.header.numVerts));
+    inFile.read(reinterpret_cast<char*>(&NewMDL.header.numTris), sizeof(NewMDL.header.numTris));
+    inFile.read(reinterpret_cast<char*>(&NewMDL.header.numFrames), sizeof(NewMDL.header.numFrames));
 
-    inFile.read(reinterpret_cast<char*>(&NewMDL.header.synctype), sizeof(NewMDL.header.synctype));
+    inFile.read(reinterpret_cast<char*>(&NewMDL.header.syncType), sizeof(NewMDL.header.syncType));
     inFile.read(reinterpret_cast<char*>(&NewMDL.header.flags), sizeof(NewMDL.header.flags));
     inFile.read(reinterpret_cast<char*>(&NewMDL.header.size), sizeof(NewMDL.header.size));
 
-    inFile.read(reinterpret_cast<char*>(&NewMDL.header.num_st_verts), sizeof(NewMDL.header.num_st_verts)); //RAPO addition
+    inFile.read(reinterpret_cast<char*>(&NewMDL.header.numStVerts), sizeof(NewMDL.header.numStVerts)); //RAPO addition
 
-    for (int h = 0; h < NewMDL.header.num_skins; h++) {
+    for (int h = 0; h < NewMDL.header.numSkins; h++) {
         int group;
         inFile.read(reinterpret_cast<char*>(&group), sizeof(group));
         if (group == 0) {
             h2pop_mdl_skin_t skindata;
             skindata.group = group;
-            for (int i = 0; i < NewMDL.header.skinheight * NewMDL.header.skinwidth; i++) {
+            for (int i = 0; i < NewMDL.header.skinHeight * NewMDL.header.skinWidth; i++) {
                 uint8_t texel;
                 inFile.read(reinterpret_cast<char*>(&texel), sizeof(texel));
                 skindata.data.push_back(texel);
@@ -221,7 +228,7 @@ H2PoP_MDL_file ParseH2PoPMDL(fs::path inpath) {
             }
             for (int i = 0; i < skindata.nb; i++) {
                 vector<uint8_t> texture;
-                for (int j = 0; j < NewMDL.header.skinheight * NewMDL.header.skinwidth; j++) {
+                for (int j = 0; j < NewMDL.header.skinHeight * NewMDL.header.skinWidth; j++) {
                     uint8_t texel;
                     inFile.read(reinterpret_cast<char*>(&texel), sizeof(texel));
                     texture.push_back(texel);
@@ -233,7 +240,7 @@ H2PoP_MDL_file ParseH2PoPMDL(fs::path inpath) {
     }
 
     //In RAPO, you don't use header.num_verts here
-    for (int i = 0; i < NewMDL.header.num_st_verts; i++) {
+    for (int i = 0; i < NewMDL.header.numStVerts; i++) {
         h2pop_mdl_texcoord_t vert;
         inFile.read(reinterpret_cast<char*>(&vert.onseam), sizeof(vert.onseam));
         if (vert.onseam != 0 && vert.onseam != 32)
@@ -243,7 +250,7 @@ H2PoP_MDL_file ParseH2PoPMDL(fs::path inpath) {
         NewMDL.UV.push_back(vert);
     }
 
-    for (int i = 0; i < NewMDL.header.num_tris; i++) {
+    for (int i = 0; i < NewMDL.header.numTris; i++) {
         h2pop_mdl_triangle_t triangle;
         inFile.read(reinterpret_cast<char*>(&triangle.facesfront), sizeof(triangle.facesfront));
         if (triangle.facesfront != 0 && triangle.facesfront != 1)
@@ -260,7 +267,7 @@ H2PoP_MDL_file ParseH2PoPMDL(fs::path inpath) {
         NewMDL.triangles.push_back(triangle);
     }
 
-    for (int h = 0; h < NewMDL.header.num_frames; h++) {
+    for (int h = 0; h < NewMDL.header.numFrames; h++) {
         int group;
         inFile.read(reinterpret_cast<char*>(&group), sizeof(group));
         if (group == 0) {
@@ -269,7 +276,7 @@ H2PoP_MDL_file ParseH2PoPMDL(fs::path inpath) {
             inFile.read(reinterpret_cast<char*>(&newframe.frame.bboxmin), sizeof(newframe.frame.bboxmin));
             inFile.read(reinterpret_cast<char*>(&newframe.frame.bboxmax), sizeof(newframe.frame.bboxmax));
             inFile.read(newframe.frame.name, 16);
-            for (int i = 0; i < NewMDL.header.num_verts; i++) {
+            for (int i = 0; i < NewMDL.header.numVerts; i++) {
                 h2pop_mdl_vertex_t vert;
                 inFile.read(reinterpret_cast<char*>(&vert.v[0]), sizeof(vert.v[0]));
                 inFile.read(reinterpret_cast<char*>(&vert.v[1]), sizeof(vert.v[1]));
@@ -306,7 +313,7 @@ H2PoP_MDL_file ParseH2PoPMDL(fs::path inpath) {
                 inFile.read(reinterpret_cast<char*>(&newframeentry.bboxmin), sizeof(newframeentry.bboxmin));
                 inFile.read(reinterpret_cast<char*>(&newframeentry.bboxmax), sizeof(newframeentry.bboxmax));
                 inFile.read(newframeentry.name, 16);
-                for (int i = 0; i < NewMDL.header.num_verts; i++) {
+                for (int i = 0; i < NewMDL.header.numVerts; i++) {
                     h2pop_mdl_vertex_t vert;
                     inFile.read(reinterpret_cast<char*>(&vert.v[0]), sizeof(vert.v[0]));
                     inFile.read(reinterpret_cast<char*>(&vert.v[1]), sizeof(vert.v[1]));
@@ -331,18 +338,18 @@ void H2PoPMDL2JSON(const H2PoP_MDL_file& NewMDL, fs::path outpath) {
     jheader["version"] = NewMDL.header.version;
     jheader["scale"] = { NewMDL.header.scale[0], NewMDL.header.scale[1], NewMDL.header.scale[2] };
     jheader["translate"] = { NewMDL.header.translate[0], NewMDL.header.translate[1], NewMDL.header.translate[2] };
-    jheader["boundingradius"] = NewMDL.header.boundingradius;
-    jheader["eyeposition"] = { NewMDL.header.eyeposition[0], NewMDL.header.eyeposition[1], NewMDL.header.eyeposition[2] };
-    jheader["num_skins"] = NewMDL.header.num_skins;
-    jheader["skinwidth"] = NewMDL.header.skinwidth;
-    jheader["skinheight"] = NewMDL.header.skinheight;
-    jheader["num_verts"] = NewMDL.header.num_verts;
-    jheader["num_tris"] = NewMDL.header.num_tris;
-    jheader["num_frames"] = NewMDL.header.num_frames;
-    jheader["synctype"] = NewMDL.header.synctype;
+    jheader["boundingRadius"] = NewMDL.header.boundingRadius;
+    jheader["eyePosition"] = { NewMDL.header.eyePosition[0], NewMDL.header.eyePosition[1], NewMDL.header.eyePosition[2] };
+    jheader["numSkins"] = NewMDL.header.numSkins;
+    jheader["skinWidth"] = NewMDL.header.skinWidth;
+    jheader["skinHeight"] = NewMDL.header.skinHeight;
+    jheader["numVerts"] = NewMDL.header.numVerts;
+    jheader["numTris"] = NewMDL.header.numTris;
+    jheader["numFrames"] = NewMDL.header.numFrames;
+    jheader["syncType"] = NewMDL.header.syncType;
     jheader["flags"] = NewMDL.header.flags;
     jheader["size"] = NewMDL.header.size;
-    jheader["num_st_verts"] = NewMDL.header.num_st_verts;
+    jheader["numStVerts"] = NewMDL.header.numStVerts;
     jsonMDL["header"] = jheader;
 
     jsonMDL["skins"] = json::array();
@@ -397,7 +404,7 @@ void H2PoPMDL2JSON(const H2PoP_MDL_file& NewMDL, fs::path outpath) {
                     gframe["max"] = { arg.frames[j].bboxmax.v[0],arg.frames[j].bboxmax.v[1],arg.frames[j].bboxmax.v[2],arg.frames[j].bboxmax.normalIndex };
                     gframe["name"] = arg.frames[j].name;
                     gframe["verts"] = json::array();
-                    for (int k = 0; k < NewMDL.header.num_verts; k++) {
+                    for (int k = 0; k < NewMDL.header.numVerts; k++) {
                         json verts;
                         verts = { arg.frames[j].verts[k].v[0],arg.frames[j].verts[k].v[1],arg.frames[j].verts[k].v[2],arg.frames[j].verts[k].normalIndex };
                         gframe["verts"].push_back(verts);
@@ -411,7 +418,7 @@ void H2PoPMDL2JSON(const H2PoP_MDL_file& NewMDL, fs::path outpath) {
                 gframe["max"] = { arg.frame.bboxmax.v[0],arg.frame.bboxmax.v[1],arg.frame.bboxmax.v[2],arg.frame.bboxmax.normalIndex };
                 gframe["name"] = arg.frame.name;
                 gframe["verts"] = json::array();
-                for (int i = 0; i < NewMDL.header.num_verts; i++) {
+                for (int i = 0; i < NewMDL.header.numVerts; i++) {
                     json verts;
                     verts = { arg.frame.verts[i].v[0],arg.frame.verts[i].v[1],arg.frame.verts[i].v[2],arg.frame.verts[i].normalIndex };
                     gframe["verts"].push_back(verts);

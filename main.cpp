@@ -70,7 +70,7 @@ void JSONChoiceSplit(fs::path inpath) {
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
-        cout << "No file provided. Please provide either a Quake MDL model, or a valid JSON file." << endl;
+        cout << "No file provided. Please provide either a supported 3D model, or a valid JSON file." << endl;
         return 1;
     }
 

@@ -40,16 +40,20 @@ The information on how to parse the model files was loosely based on the followi
 - https://formats.kaitai.io/quake_mdl/
 - https://github.com/amroibrahim/DIYQuake/blob/main/Quake/Notes005/notes/README.md
 - The official Quake 1 source code release.
+
 ## H2PoP MDL
 - The source code of Hammer of Thyrion, a Hexen 2 source port.
+
 ## Q2 MD2
 - http://tfc.duke.free.fr/coding/md2-specs-en.html
 - https://icculus.org/~phaethon/q3a/formats/md2-schoenblum.html
 - The official Quake 2 source code release.
+
 ## DKM
 - https://github.com/cholleme/DaikatanaTools/blob/main/DaiMdlV2/models.pas
 - https://www.moddb.com/downloads/daikatana-to-quake-2-model-converter
 - https://github.com/TrenchBroom/TrenchBroom/blob/c2ae5a5b48c345d06e315571cd4da30ef04748e5/lib/TbMdlLib/src/LoadDkmModel.cpp
 - Assistance from the Beta 1.3 patch team.
+
 ## Q3 MD3
 - https://icculus.org/homepages/phaethon/q3a/formats/md3format.html

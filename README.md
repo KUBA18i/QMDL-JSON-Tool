@@ -27,11 +27,11 @@ g++ main.cpp Q1MDL.cpp H2PoPMDL.cpp Q2MD2.cpp DKM.cpp Q3MD3.cpp -o QMDL-JSON-Too
 ```
 
 # Copyright
-This program was made by Jakub Majewski.
-JSON parsing library was made by Niels Lohmann.
-Quake was originally made by iD Software; its engine and model format was mostly devised by John Carmack. Most formats here are derivatives of it.
-RAPO format is by Raven Software.
-DKM format is by Ion Storm.
+This program was made by Jakub Majewski.  
+JSON parsing library was made by Niels Lohmann.  
+Quake was originally made by iD Software; its engine and model format was mostly devised by John Carmack. Most formats here are derivatives of it.  
+RAPO format is by Raven Software.  
+DKM format is by Ion Storm.  
 
 # References
 The information on how to parse the model files was loosely based on the following sources:

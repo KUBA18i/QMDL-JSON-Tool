@@ -127,9 +127,9 @@ void JSON2DKM(fs::path inpath, fs::path outpath, json jsonDKM) {
 
             for (const auto& v : f["verts"]) {
                 if (new_header.version == 1) {
-                    byte x = v[0];
-                    byte y = v[1];
-                    byte z = v[2];
+                    uint8_t x = v[0];
+                    uint8_t y = v[1];
+                    uint8_t z = v[2];
                     outFile.write(reinterpret_cast<char*>(&x), sizeof(x));
                     outFile.write(reinterpret_cast<char*>(&y), sizeof(y));
                     outFile.write(reinterpret_cast<char*>(&z), sizeof(z));
@@ -141,11 +141,11 @@ void JSON2DKM(fs::path inpath, fs::path outpath, json jsonDKM) {
                     uint32_t packvert = ((x & 0x7FF) << 21) | ((y & 0x3FF) << 11) | ((z & 0x7FF));
                     outFile.write(reinterpret_cast<char*>(&packvert), sizeof(packvert));
                 }
-                byte lightNormalIndex = v[3];
+                uint8_t lightNormalIndex = v[3];
                 outFile.write(reinterpret_cast<char*>(&lightNormalIndex), sizeof(lightNormalIndex));
             }
             if (new_header.version == 2) {
-                byte unknown[3] = { f["unknown"][0], f["unknown"][1], f["unknown"][2] };
+                uint8_t unknown[3] = { f["unknown"][0], f["unknown"][1], f["unknown"][2] };
                 outFile.write(reinterpret_cast<char*>(&unknown), sizeof(unknown));
             }
         }

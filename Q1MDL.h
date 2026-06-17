@@ -68,8 +68,8 @@ struct q1_mdl_triangle_t
 
 struct q1_mdl_vertex_t
 {
-    unsigned char v[3];
-    unsigned char normalIndex;
+    uint8_t v[3];
+    uint8_t normalIndex;
 };
 
 struct q1_mdl_simpleframe_t

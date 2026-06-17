@@ -102,7 +102,7 @@ void JSON2Q2MD2(fs::path inpath, fs::path outpath, json jsonMD2) {
             outFile.write(name, 16);
 
             for (const auto& v : f["verts"]) {
-                byte vert[4] = { v[0], v[1], v[2], v[3] };
+                uint8_t vert[4] = { v[0], v[1], v[2], v[3] };
                 outFile.write(reinterpret_cast<char*>(&vert), 4);
             }
         }

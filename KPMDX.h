@@ -47,8 +47,8 @@ struct kp_mdx_header_t
 
 struct kp_mdx_triangleVertex_t
 {
-    byte vertex[3];
-    byte lightNormalIndex;
+    uint8_t vertex[3];
+    uint8_t lightNormalIndex;
 };
 
 struct kp_mdx_frame_t

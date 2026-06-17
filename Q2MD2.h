@@ -41,8 +41,8 @@ struct q2_md2_header_t
 
 struct q2_md2_triangleVertex_t
 {
-    byte vertex[3];
-    byte lightNormalIndex;
+    uint8_t vertex[3];
+    uint8_t lightNormalIndex;
 };
 
 struct q2_md2_frame_t

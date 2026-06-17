@@ -24,7 +24,7 @@ After you have a JSON file, you can use `format_json.py` to remove the unnecessa
 # Compile
 If using MSVS, open the SLN. If on Linux, you can use the included shell script. Otherwise:
 ```
-g++ main.cpp Q1MDL.cpp H2PoPMDL.cpp Q2MD2.cpp DKM.cpp Q3MD3.cpp -o QMDL-JSON-Tool_linux -I.
+g++ main.cpp Q1MDL.cpp H2PoPMDL.cpp Q2MD2.cpp KPMDX.cpp DKM.cpp Q3MD3.cpp -o QMDL-JSON-Tool_linux -I.
 ```
 
 # Copyright

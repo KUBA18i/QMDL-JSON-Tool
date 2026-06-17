@@ -25,10 +25,13 @@ void JSON2KPMDX(fs::path inpath, fs::path outpath, json jsonMDX) {
 
         kp_mdx_header_t new_header;
 
-        new_header.version = 8;
+        new_header.version = 4;
         new_header.numSkins = jsonMDX["skins"].size();
         new_header.numTriangles = jsonMDX["triangles"].size();
         new_header.numFrames = jsonMDX["frames"].size();
+        new_header.numSfxDefines = jsonMDX["SfxDefintions"].size();
+        new_header.numSfxEntries = jsonMDX["SfxEntries"].size();
+        new_header.numSubObjects = jsonMDX["BBoxFrames"].size();
 
         new_header.numVertices = -1;
         for (const auto& f : jsonMDX["frames"]) {
@@ -42,7 +45,7 @@ void JSON2KPMDX(fs::path inpath, fs::path outpath, json jsonMDX) {
 
         new_header.numGlCommands = 0;
         for (const auto& g : jsonMDX["glCommands"]) {
-            new_header.numGlCommands++;
+            new_header.numGlCommands += 2;
             new_header.numGlCommands += (g["verts"].size() * 3);
         }
         new_header.numGlCommands++;
@@ -53,7 +56,7 @@ void JSON2KPMDX(fs::path inpath, fs::path outpath, json jsonMDX) {
         new_header.skinWidth = jheader["skinWidth"];
         new_header.skinHeight = jheader["skinHeight"];
         
-        outFile.write("IDP2", 4);
+        outFile.write("IDPX", 4);
         outFile.write(reinterpret_cast<char*>(&new_header.version), sizeof(int));
         outFile.write(reinterpret_cast<char*>(&new_header.skinWidth), sizeof(int));
         outFile.write(reinterpret_cast<char*>(&new_header.skinHeight), sizeof(int));
@@ -63,7 +66,10 @@ void JSON2KPMDX(fs::path inpath, fs::path outpath, json jsonMDX) {
         outFile.write(reinterpret_cast<char*>(&new_header.numTriangles), sizeof(int));
         outFile.write(reinterpret_cast<char*>(&new_header.numGlCommands), sizeof(int));
         outFile.write(reinterpret_cast<char*>(&new_header.numFrames), sizeof(int));
-        for (int i = 0; i < 24; i++) outFile.write("X", 1);
+        outFile.write(reinterpret_cast<char*>(&new_header.numSfxDefines), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&new_header.numSfxEntries), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&new_header.numSubObjects), sizeof(int));
+        for (int i = 0; i < 40; i++) outFile.write("X", 1);
         
         new_header.offsetSkins = outFile.tellp();
         for (const auto& s : jsonMDX["skins"]) {
@@ -71,14 +77,6 @@ void JSON2KPMDX(fs::path inpath, fs::path outpath, json jsonMDX) {
             string sName = s;
             strncpy(name, sName.c_str(), 63);
             outFile.write(name, 64);
-        }
-        
-        //new_header.offsetTexCoords = outFile.tellp();
-        for (const auto& uv : jsonMDX["UV"]) {
-            short s = uv[0];
-            short t = uv[1];
-            outFile.write(reinterpret_cast<char*>(&s), sizeof(s));
-            outFile.write(reinterpret_cast<char*>(&t), sizeof(t));
         }
         
         new_header.offsetTriangles = outFile.tellp();
@@ -95,8 +93,8 @@ void JSON2KPMDX(fs::path inpath, fs::path outpath, json jsonMDX) {
             string sName = f["name"];
             strncpy(name, sName.c_str(), 15);
 
-            outFile.write(reinterpret_cast<char*>(scale), sizeof(scale));
-            outFile.write(reinterpret_cast<char*>(translate), sizeof(translate));
+            outFile.write(reinterpret_cast<char*>(&scale), sizeof(scale));
+            outFile.write(reinterpret_cast<char*>(&translate), sizeof(translate));
             outFile.write(name, 16);
 
             for (const auto& v : f["verts"]) {
@@ -110,6 +108,8 @@ void JSON2KPMDX(fs::path inpath, fs::path outpath, json jsonMDX) {
             int vcount = g["verts"].size();
             if (g["strip"].get<bool>() == false) vcount *= (-1);
             outFile.write(reinterpret_cast<char*>(&vcount), sizeof(vcount));
+            int soid = g["SubObjectID"];
+            outFile.write(reinterpret_cast<char*>(&soid), sizeof(soid));
             for (const auto& v : g["verts"]) {
                 float vs = v[0];
                 float vt = v[1];
@@ -120,14 +120,100 @@ void JSON2KPMDX(fs::path inpath, fs::path outpath, json jsonMDX) {
             }
         }
         outFile.write("\0\0\0\0", 4);
+        
+        new_header.offsetVertexInfo = outFile.tellp();
+        for (const auto& vi : jsonMDX["VertexInfo"]) {
+            int v = vi;
+            outFile.write(reinterpret_cast<char*>(&v), sizeof(v));
+        }
+        
+        new_header.offsetSfxDefines = outFile.tellp();
+        for (const auto& sd : jsonMDX["SfxDefintions"]) {
+            kp_mdx_sfxDefine_t newSD;
+            newSD.type = sd["type"];
+            newSD.flags = sd["flags"];
+            newSD.velocity_type = sd["velocity_type"];
+            newSD.velocity_speed_up = sd["velocity_speed_up"];
+            newSD.gravity = sd["gravity"];
+            newSD.spawn_interval = sd["spawn_interval"];
+            newSD.random_spawn_interval = sd["random_spawn_interval"];
+            newSD.start_alpha = sd["start_alpha"];
+            newSD.end_alpha = sd["end_alpha"];
+            newSD.fadein_time = sd["fadein_time"];
+            newSD.lifetime = sd["lifetime"];
+            newSD.random_time_scale = sd["random_time_scale"];
+            newSD.start_width = sd["start_width"];
+            newSD.end_width = sd["end_width"];
+            newSD.start_height = sd["start_height"];
+            newSD.end_height = sd["end_height"];
+            newSD.random_size_scale = sd["random_size_scale"];
+            
+            outFile.write(reinterpret_cast<char*>(&newSD.type), sizeof(newSD.type));
+            outFile.write(reinterpret_cast<char*>(&newSD.flags), sizeof(newSD.flags));
+            outFile.write(reinterpret_cast<char*>(&newSD.velocity_type), sizeof(newSD.velocity_type));
+            outFile.write(reinterpret_cast<char*>(&newSD.velocity_speed_up), sizeof(newSD.velocity_speed_up));
+            outFile.write(reinterpret_cast<char*>(&newSD.gravity), sizeof(newSD.gravity));
+            outFile.write(reinterpret_cast<char*>(&newSD.spawn_interval), sizeof(newSD.spawn_interval));
+            outFile.write(reinterpret_cast<char*>(&newSD.random_spawn_interval), sizeof(newSD.random_spawn_interval));
+            outFile.write(reinterpret_cast<char*>(&newSD.start_alpha), sizeof(newSD.start_alpha));
+            outFile.write(reinterpret_cast<char*>(&newSD.end_alpha), sizeof(newSD.end_alpha));
+            outFile.write(reinterpret_cast<char*>(&newSD.fadein_time), sizeof(newSD.fadein_time));
+            outFile.write(reinterpret_cast<char*>(&newSD.lifetime), sizeof(newSD.lifetime));
+            outFile.write(reinterpret_cast<char*>(&newSD.random_time_scale), sizeof(newSD.random_time_scale));
+            outFile.write(reinterpret_cast<char*>(&newSD.start_width), sizeof(newSD.start_width));
+            outFile.write(reinterpret_cast<char*>(&newSD.end_width), sizeof(newSD.end_width));
+            outFile.write(reinterpret_cast<char*>(&newSD.start_height), sizeof(newSD.start_height));
+            outFile.write(reinterpret_cast<char*>(&newSD.end_height), sizeof(newSD.end_height));
+            outFile.write(reinterpret_cast<char*>(&newSD.random_size_scale), sizeof(newSD.random_size_scale));
+        }
+        
+        new_header.offsetSfxEntries = outFile.tellp();
+        for (const auto& se : jsonMDX["SfxEntries"]) {
+            kp_mdx_sfxEntry_t newSE;
+            newSE.index = se["index"];
+            newSE.define_no = se["define_no"];
+            newSE.vertexindex = se["vertexindex"];
+            outFile.write(reinterpret_cast<char*>(&newSE.index), sizeof(newSE.index));
+            outFile.write(reinterpret_cast<char*>(&newSE.define_no), sizeof(newSE.define_no));
+            outFile.write(reinterpret_cast<char*>(&newSE.vertexindex), sizeof(newSE.vertexindex));
+            for (const auto& f : se["SfxFrames"]) {
+                uint8_t vert = f;
+                outFile.write(reinterpret_cast<char*>(&vert), 1);
+            }
+        }
+
+        new_header.offsetBBoxFrames = outFile.tellp();
+        for (const auto& bf : jsonMDX["BBoxFrames"]) {
+            for (const auto& bbox : bf) {
+                kp_mdx_BBox_t newbox;
+                newbox.MinX = bbox[0];
+                newbox.MinY = bbox[1];
+                newbox.MinZ = bbox[2];
+                newbox.MaxX = bbox[3];
+                newbox.MaxY = bbox[4];
+                newbox.MaxZ = bbox[5];
+                outFile.write(reinterpret_cast<char*>(&newbox.MinX), sizeof(newbox.MinX));
+                outFile.write(reinterpret_cast<char*>(&newbox.MinY), sizeof(newbox.MinY));
+                outFile.write(reinterpret_cast<char*>(&newbox.MinZ), sizeof(newbox.MinZ));
+                outFile.write(reinterpret_cast<char*>(&newbox.MaxX), sizeof(newbox.MaxX));
+                outFile.write(reinterpret_cast<char*>(&newbox.MaxY), sizeof(newbox.MaxY));
+                outFile.write(reinterpret_cast<char*>(&newbox.MaxZ), sizeof(newbox.MaxZ));
+            }
+        }
+        
+        new_header.offsetDummyEnd = outFile.tellp();
         new_header.offsetEnd = outFile.tellp();
 
-        outFile.seekp(44);
+        outFile.seekp(52);
         outFile.write(reinterpret_cast<char*>(&new_header.offsetSkins), sizeof(int));
-        //outFile.write(reinterpret_cast<char*>(&new_header.offsetTexCoords), sizeof(int));
         outFile.write(reinterpret_cast<char*>(&new_header.offsetTriangles), sizeof(int));
         outFile.write(reinterpret_cast<char*>(&new_header.offsetFrames), sizeof(int));
         outFile.write(reinterpret_cast<char*>(&new_header.offsetGlCommands), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&new_header.offsetVertexInfo), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&new_header.offsetSfxDefines), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&new_header.offsetSfxEntries), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&new_header.offsetBBoxFrames), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&new_header.offsetDummyEnd), sizeof(int));
         outFile.write(reinterpret_cast<char*>(&new_header.offsetEnd), sizeof(int));
 
         outFile.close();
@@ -171,10 +257,10 @@ kp_mdx_file ParseKPMDX(fs::path inpath) {
         NewMDX.header.offsetTriangles < NewMDX.header.offsetFrames &&
         NewMDX.header.offsetFrames < NewMDX.header.offsetGlCommands &&
         NewMDX.header.offsetGlCommands < NewMDX.header.offsetVertexInfo &&
-        NewMDX.header.offsetVertexInfo < NewMDX.header.offsetSfxDefines &&
-        NewMDX.header.offsetSfxDefines < NewMDX.header.offsetSfxEntries &&
-        NewMDX.header.offsetSfxEntries < NewMDX.header.offsetBBoxFrames &&
-        NewMDX.header.offsetBBoxFrames < NewMDX.header.offsetDummyEnd &&
+        NewMDX.header.offsetVertexInfo <= NewMDX.header.offsetSfxDefines &&
+        NewMDX.header.offsetSfxDefines <= NewMDX.header.offsetSfxEntries &&
+        NewMDX.header.offsetSfxEntries <= NewMDX.header.offsetBBoxFrames &&
+        NewMDX.header.offsetBBoxFrames <= NewMDX.header.offsetDummyEnd &&
         NewMDX.header.offsetDummyEnd <= NewMDX.header.offsetEnd) {
         cout << "Offsets are in ascending order." << endl;
     }
@@ -191,6 +277,9 @@ kp_mdx_file ParseKPMDX(fs::path inpath) {
         cout << "header.offsetDummyEnd: " << NewMDX.header.offsetDummyEnd << endl;
         cout << "header.offsetEnd: " << NewMDX.header.offsetEnd << endl;
     }
+
+    if (NewMDX.header.numSfxDefines)cout << "SFX Definitions present: " << NewMDX.header.numSfxDefines << endl;
+    if (NewMDX.header.numSfxEntries)cout << "SFX Entries present: " << NewMDX.header.numSfxEntries << endl;
 
     inFile.seekg(NewMDX.header.offsetSkins);
     for (int i = 0; i < NewMDX.header.numSkins; i++) {
@@ -392,7 +481,7 @@ void KPMDX2JSON(const kp_mdx_file& NewMDX, fs::path outpath) {
     jsonMDX["VertexInfo"] = json::array();
     for (const auto& vi : NewMDX.VertexInfo) {
         json s;
-        s = { vi };
+        s = vi;
         jsonMDX["VertexInfo"].push_back(s);
     }
 
@@ -438,7 +527,7 @@ void KPMDX2JSON(const kp_mdx_file& NewMDX, fs::path outpath) {
             json jbb;
             jbf.push_back({ bfr.MinX, bfr.MinY, bfr.MinZ, bfr.MaxX, bfr.MaxY, bfr.MaxZ });
         }
-        jsonMDX["SfxEntries"].push_back(jbf);
+        jsonMDX["BBoxFrames"].push_back(jbf);
     }
 
     cout << "JSON prepped, time to export." << endl;

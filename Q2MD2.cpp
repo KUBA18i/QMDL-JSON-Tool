@@ -97,8 +97,8 @@ void JSON2Q2MD2(fs::path inpath, fs::path outpath, json jsonMD2) {
             string sName = f["name"];
             strncpy(name, sName.c_str(), 15);
 
-            outFile.write(reinterpret_cast<char*>(scale), sizeof(scale));
-            outFile.write(reinterpret_cast<char*>(translate), sizeof(translate));
+            outFile.write(reinterpret_cast<char*>(&scale), sizeof(scale));
+            outFile.write(reinterpret_cast<char*>(&translate), sizeof(translate));
             outFile.write(name, 16);
 
             for (const auto& v : f["verts"]) {

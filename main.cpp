@@ -52,6 +52,13 @@ void JSONChoiceSplit(fs::path inpath) {
         JSON2Q2MD2(inpath, outPath, jsoncontents);
         return;
     }
+    if (jheader.at("ident").get<string>() == "IDPX" && jheader.at("version").get<int>() == 4) {
+        cout << "Identified Kingpin model JSON." << endl;
+        fs::path outPath = inpath;
+        outPath.replace_extension(".mdx");
+        JSON2KPMDX(inpath, outPath, jsoncontents);
+        return;
+    }
     if (jheader.at("ident").get<string>() == "DKMD" && jheader.at("version").get<int>() > 0 && jheader.at("version").get<int>() < 3) {
         cout << "Identified Daikatana model file: " << jheader.at("ident").get<string>() << ", version " << jheader.at("version").get<int>() << endl;
         fs::path outPath = inpath;

@@ -129,6 +129,7 @@
   <ItemGroup>
     <ClCompile Include="DKM.cpp" />
     <ClCompile Include="H2PoPMDL.cpp" />
+    <ClCompile Include="KPMDX.cpp" />
     <ClCompile Include="Q1MDL.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Q2MD2.cpp" />
@@ -138,6 +139,7 @@
     <ClInclude Include="DKM.h" />
     <ClInclude Include="H2PoPMDL.h" />
     <ClInclude Include="json.hpp" />
+    <ClInclude Include="KPMDX.h" />
     <ClInclude Include="Q1MDL.h" />
     <ClInclude Include="Q2MD2.h" />
     <ClInclude Include="Q3MD3.h" />

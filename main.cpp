@@ -12,6 +12,7 @@
 #include "Q1MDL.h"
 #include "H2PoPMDL.h"
 #include "Q2MD2.h"
+#include "KPMDX.h"
 #include "DKM.h"
 #include "Q3MD3.h"
 
@@ -133,6 +134,32 @@ int main(int argc, char* argv[]) {
         if (memcmp(ident, "IDP2", 4) == 0 && versionnum == 8) {
             cout << "Identified Quake 2 model file: " << string(ident, 4) << " and " << versionnum << endl;
             Q2MD22JSON(ParseQ2MD2(filePath), outPath);
+        }
+        else {
+            cout << "Error: Invalid ident and version numbers: " << string(ident, 4) << " and " << versionnum << endl;
+            return 1;
+        }
+    }
+    else if (extension == ".mdx") {
+        cout << "Processing MDX file..." << endl;
+        fs::path outPath = filePath;
+        outPath.replace_extension(".json");
+
+        ifstream inFile(filePath, ios::binary);
+        if (!inFile.is_open()) {
+            cout << "Error: Could not open input file." << endl;
+            return 1;
+        }
+
+        char ident[4];
+        inFile.read(ident, 4);
+        int versionnum;
+        inFile.read(reinterpret_cast<char*>(&versionnum), sizeof(versionnum));
+        inFile.close();
+
+        if (memcmp(ident, "IDPX", 4) == 0 && versionnum == 4) {
+            cout << "Identified Kingpin model file: " << string(ident, 4) << " and " << versionnum << endl;
+            KPMDX2JSON(ParseKPMDX(filePath), outPath);
         }
         else {
             cout << "Error: Invalid ident and version numbers: " << string(ident, 4) << " and " << versionnum << endl;

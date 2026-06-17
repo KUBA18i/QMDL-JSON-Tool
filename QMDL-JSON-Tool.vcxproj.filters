@@ -33,6 +33,9 @@
     <ClCompile Include="DKM.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="KPMDX.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="json.hpp">
@@ -51,6 +54,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DKM.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KPMDX.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

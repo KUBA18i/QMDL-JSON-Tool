@@ -65,11 +65,6 @@ struct kp_mdx_triangle_t
     short textureIndices[3];
 };
 
-struct kp_mdx_textureCoordinate_t
-{
-    short s, t;
-};
-
 struct kp_mdx_glCommandVertex_t {
     float s, t;
     int vertexIndex;
@@ -128,7 +123,6 @@ struct kp_mdx_BFrames_t
 struct kp_mdx_file {
     kp_mdx_header_t header;
     vector<string> skinpaths;
-    vector<kp_mdx_textureCoordinate_t> UV;
     vector<kp_mdx_triangle_t> triangles;
     vector<kp_mdx_frame_t> frames;
     vector<kp_mdx_glCommand_t> GLCommands;

@@ -12,6 +12,7 @@ The reason why the JSON format script is in Python instead of C++ is because it 
 - Quake 1's MDL files (IDPO ident)
 - Hexen 2: Portal of Praevus's MDL files (RAPO ident)
 - Quake 2's MD2 files (IDP2 ident)
+- Heretic 2's FlexModel files (.fm extension and original structure)
 - Kingpin: Life of Crime's MDX files (IPDX ident)
 - Daikatana's DKM files, both versions (DKMD ident)
 - Quake 3's MD3 files (IDP3 ident)
@@ -24,14 +25,14 @@ After you have a JSON file, you can use `format_json.py` to remove the unnecessa
 # Compile
 If using MSVS, open the SLN. If on Linux, you can use the included shell script. Otherwise:
 ```
-g++ main.cpp Q1MDL.cpp H2PoPMDL.cpp Q2MD2.cpp KPMDX.cpp DKM.cpp Q3MD3.cpp -o QMDL-JSON-Tool_linux -I.
+g++ main.cpp Q1MDL.cpp H2PoPMDL.cpp Q2MD2.cpp H2FM.cpp KPMDX.cpp DKM.cpp Q3MD3.cpp -o QMDL-JSON-Tool_linux -I.
 ```
 
 # Copyright
 This program was made by Jakub Majewski.  
 JSON parsing library was made by Niels Lohmann.  
 Quake was originally made by iD Software; its engine and model format was mostly devised by John Carmack. Most formats here are derivatives of it.  
-RAPO format is by Raven Software.  
+RAPO and FlexModel formats are by Raven Software.  
 MDX format is by Xatrix Entertainment, aka Gray Matter Interactive.  
 DKM format is by Ion Storm.  
 
@@ -50,6 +51,9 @@ The information on how to parse the model files was loosely based on the followi
 - http://tfc.duke.free.fr/coding/md2-specs-en.html
 - https://icculus.org/~phaethon/q3a/formats/md2-schoenblum.html
 - The official Quake 2 source code release.
+
+## H2 FM
+- https://github.com/m-x-d/Heretic2R/tree/main
 
 ## KP MDX
 - https://wiki.kingpin.info/index.php/MDX

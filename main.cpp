@@ -12,6 +12,7 @@
 #include "Q1MDL.h"
 #include "H2PoPMDL.h"
 #include "Q2MD2.h"
+#include "H2FM.h"
 #include "KPMDX.h"
 #include "DKM.h"
 #include "Q3MD3.h"
@@ -30,6 +31,13 @@ void JSONChoiceSplit(fs::path inpath) {
     json jsoncontents = json::parse(fjson);
     fjson.close();
 
+    if (jsoncontents.contains("Format") && jsoncontents.at("Format").get<string>() == "FlexModel") {
+        cout << "Identified Heretic 2 FlexModel JSON." << endl;
+        fs::path outPath = inpath;
+        outPath.replace_extension(".fm");
+        JSON2H2FM(inpath, outPath, jsoncontents);
+        return;
+    }
     auto jheader = jsoncontents.at("header");
     if (jheader.at("ident").get<string>() == "IDPO" && jheader.at("version").get<int>() == 6) {
         cout << "Identified Quake 1 model JSON." << endl;
@@ -146,6 +154,12 @@ int main(int argc, char* argv[]) {
             cout << "Error: Invalid ident and version numbers: " << string(ident, 4) << " and " << versionnum << endl;
             return 1;
         }
+    }
+    else if (extension == ".fm") {
+        cout << "Processing Heretic 2 FlexModel file..." << endl;
+        fs::path outPath = filePath;
+        outPath.replace_extension(".json");
+        FM2JSON(ParseFM(filePath), outPath);
     }
     else if (extension == ".mdx") {
         cout << "Processing MDX file..." << endl;

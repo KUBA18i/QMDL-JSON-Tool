@@ -36,6 +36,9 @@
     <ClCompile Include="KPMDX.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="H2FM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="json.hpp">
@@ -57,6 +60,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="KPMDX.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="H2FM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

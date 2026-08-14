@@ -16,6 +16,7 @@
 #include "KPMDX.h"
 #include "DKM.h"
 #include "Q3MD3.h"
+#include "SS1MDL.h"
 
 using namespace std;
 using json = nlohmann::ordered_json;
@@ -36,6 +37,13 @@ void JSONChoiceSplit(fs::path inpath) {
         fs::path outPath = inpath;
         outPath.replace_extension(".fm");
         JSON2H2FM(inpath, outPath, jsoncontents);
+        return;
+    }
+    if (jsoncontents.contains("Format") && jsoncontents.at("Format").get<string>() == "SeriousSamMDL") {
+        cout << "Identified Serious Sam MDL JSON." << endl;
+        fs::path outPath = inpath;
+        outPath.replace_extension(".mdl");
+        JSON2SS1MDL(inpath, outPath, jsoncontents);
         return;
     }
     auto jheader = jsoncontents.at("header");
@@ -123,6 +131,10 @@ int main(int argc, char* argv[]) {
         else if (memcmp(ident, "RAPO", 4) == 0 && versionnum == 50) {
             cout << "Identified Hexen ][: Portals of Praevus model file: " << string(ident, 4) << " and " << versionnum << endl;
             H2PoPMDL2JSON(ParseH2PoPMDL(filePath), outPath);
+        }
+        else if (memcmp(ident, "MDAT", 4) == 0) {
+            cout << "Identified Serious Sam model file container: " << string(ident, 4) << endl;
+            SS1MDL2JSON(ParseSS1MDL(filePath), outPath);
         }
         else {
             cout << "Error: Invalid ident and version numbers: " << string(ident, 4) << " and " << versionnum << endl;

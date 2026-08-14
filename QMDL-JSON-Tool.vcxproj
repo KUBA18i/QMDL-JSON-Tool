@@ -139,6 +139,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Q2MD2.cpp" />
     <ClCompile Include="Q3MD3.cpp" />
+    <ClCompile Include="SS1MDL.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DKM.h" />
@@ -149,6 +150,7 @@
     <ClInclude Include="Q1MDL.h" />
     <ClInclude Include="Q2MD2.h" />
     <ClInclude Include="Q3MD3.h" />
+    <ClInclude Include="SS1MDL.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

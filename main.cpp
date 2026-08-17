@@ -39,8 +39,8 @@ void JSONChoiceSplit(fs::path inpath) {
         JSON2H2FM(inpath, outPath, jsoncontents);
         return;
     }
-    if (jsoncontents.contains("Format") && jsoncontents.at("Format").get<string>() == "SeriousSamMDL") {
-        cout << "Identified Serious Sam MDL JSON." << endl;
+    if (jsoncontents.contains("Format") && jsoncontents.at("Format").get<string>() == "SeriousSam1MDL") {
+        cout << "Identified Serious Sam 1 MDL JSON." << endl;
         fs::path outPath = inpath;
         outPath.replace_extension(".mdl");
         JSON2SS1MDL(inpath, outPath, jsoncontents);

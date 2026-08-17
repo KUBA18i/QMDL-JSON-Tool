@@ -88,6 +88,11 @@ void SS1_MDL_SetModelVersionFlags(char version[4]) {
 
 char ChunkBuffer[4];
 uint32_t ChunkSize;
+void WriteChunkHeader(ofstream& outFile, const char* id, uint32_t size) {
+    outFile.write(id, 4);
+    outFile.write(reinterpret_cast<char*>(&size), sizeof(size));
+    cout << "Writing Chunk ID: " << id << " | size: " << size << endl;
+}
 void ReadChunkHeader(ifstream& inFile) {
     inFile.read(ChunkBuffer, 4);
     inFile.read(reinterpret_cast<char*>(&ChunkSize), sizeof(ChunkSize));
@@ -108,9 +113,532 @@ string ReadCString(ifstream& inFile) {
     }
     return newstring;
 }
+bool Read4ByteBool(ifstream& inFile) {
+    uint32_t buffer;
+    inFile.read(reinterpret_cast<char*>(&buffer), sizeof(buffer));
+    bool result = (buffer != 0);
+    return result;
+}
+void WriteCString(ofstream& outFile, string cstring) {
+    uint32_t CharCount = cstring.size();
+    outFile.write(reinterpret_cast<char*>(&CharCount), sizeof(CharCount));
+    outFile.write(cstring.c_str(), CharCount);
+}
+void Write4ByteBool(ofstream& outFile, bool input) {
+    uint32_t buffer = input ? 1 : 0;
+    outFile.write(reinterpret_cast<char*>(&buffer), sizeof(buffer));
+}
+uint32_t NullsFound = 0;
+float JSONFloatCheck(const nlohmann::json& j) {
+    NullsFound++;
+    return (j.is_number()) ? j.get<float>() : numeric_limits<float>::quiet_NaN();
+}
 
 void JSON2SS1MDL(const fs::path& inpath, const fs::path& outpath, const json& jsonMDL) {
+    try {
+        ofstream outFile(outpath, ios::binary);
+        if (!outFile.is_open()) {
+            cout << "Error: Could not open output file." << endl;
+            return;
+        }
 
+        SS1_MDL_file newMDL;
+
+        auto jmodelinfo = jsonMDL.at("ModelInfo");
+        newMDL.version = jmodelinfo["version"];
+        char MDLVersion[4];
+        newMDL.version.copy(MDLVersion, 4);
+        SS1_MDL_SetModelVersionFlags(MDLVersion);
+
+        newMDL.flags = jmodelinfo["flags"];
+        newMDL.verticesCount = jsonMDL["mainMipVertices"].size();
+        newMDL.framesCount = jsonMDL["frameInfos"].size();
+        
+        uint32_t MemberCount;
+
+        outFile.write("MDAT", 4);
+        outFile.write(MDLVersion, 4);
+        if (SS1_MDL_bHasSavedFlagsOnStart)
+            outFile.write(reinterpret_cast<char*>(&newMDL.flags), sizeof(newMDL.flags));
+        WriteChunkHeader(outFile, "IVTX", 4);
+        outFile.write(reinterpret_cast<char*>(&newMDL.verticesCount), sizeof(newMDL.verticesCount));
+        WriteChunkHeader(outFile, "IFRM", 4);
+        outFile.write(reinterpret_cast<char*>(&newMDL.framesCount), sizeof(newMDL.framesCount));
+        
+        if (jsonMDL["AV16"].is_array() && !jsonMDL["AV16"].empty()) {
+            WriteChunkHeader(outFile, "AV16", newMDL.verticesCount * newMDL.framesCount * 8);
+            for (const auto& vert : jsonMDL["AV16"]) {
+                int16_t x = vert[0];
+                int16_t y = vert[1];
+                int16_t z = vert[2];
+                uint8_t normalIndex = vert[3];
+                outFile.write(reinterpret_cast<char*>(&x), sizeof(x));
+                outFile.write(reinterpret_cast<char*>(&y), sizeof(y));
+                outFile.write(reinterpret_cast<char*>(&z), sizeof(z));
+                outFile.write(reinterpret_cast<char*>(&normalIndex), sizeof(normalIndex));
+                outFile.write("\0", 1);//padding
+            }
+        }
+        else if (jsonMDL["AV17"].is_array() && !jsonMDL["AV17"].empty()) {
+            WriteChunkHeader(outFile, "AV17", newMDL.verticesCount * newMDL.framesCount * 8);
+            for (const auto& vert : jsonMDL["AV17"]) {
+                int16_t x = vert[0];
+                int16_t y = vert[1];
+                int16_t z = vert[2];
+                uint8_t normH = vert[3];
+                uint8_t normP = vert[4];
+                outFile.write(reinterpret_cast<char*>(&x), sizeof(x));
+                outFile.write(reinterpret_cast<char*>(&y), sizeof(y));
+                outFile.write(reinterpret_cast<char*>(&z), sizeof(z));
+                outFile.write(reinterpret_cast<char*>(&normH), sizeof(normH));
+                outFile.write(reinterpret_cast<char*>(&normP), sizeof(normP));
+            }
+        }
+        else if (jsonMDL["AFVX"].is_array() && !jsonMDL["AFVX"].empty()) {
+            WriteChunkHeader(outFile, "AFVX", newMDL.verticesCount * newMDL.framesCount * 4);
+            for (const auto& vert : jsonMDL["AFVX"]) {
+                uint8_t x = vert[0];
+                uint8_t y = vert[1];
+                uint8_t z = vert[2];
+                uint8_t normalIndex = vert[3];
+                outFile.write(reinterpret_cast<char*>(&x), sizeof(x));
+                outFile.write(reinterpret_cast<char*>(&y), sizeof(y));
+                outFile.write(reinterpret_cast<char*>(&z), sizeof(z));
+                outFile.write(reinterpret_cast<char*>(&normalIndex), sizeof(normalIndex));
+            }
+        }
+        else {
+            cout << "Error: missing vertices chunk." << endl;
+            exit(1);
+        }
+
+        WriteChunkHeader(outFile, "AFIN", newMDL.framesCount * 24);
+        for (const auto& fi : jsonMDL["frameInfos"]) {
+            ss1_mdl_ModelFrameInfo newfi;
+            newfi.MinX = JSONFloatCheck(fi[0]);
+            newfi.MinY = JSONFloatCheck(fi[1]);
+            newfi.MinZ = JSONFloatCheck(fi[2]);
+            newfi.MaxX = JSONFloatCheck(fi[3]);
+            newfi.MaxY = JSONFloatCheck(fi[4]);
+            newfi.MaxZ = JSONFloatCheck(fi[5]);
+            outFile.write(reinterpret_cast<char*>(&newfi.MinX), sizeof(newfi.MinX));
+            outFile.write(reinterpret_cast<char*>(&newfi.MinY), sizeof(newfi.MinX));
+            outFile.write(reinterpret_cast<char*>(&newfi.MinZ), sizeof(newfi.MinX));
+            outFile.write(reinterpret_cast<char*>(&newfi.MaxX), sizeof(newfi.MaxX));
+            outFile.write(reinterpret_cast<char*>(&newfi.MaxY), sizeof(newfi.MaxY));
+            outFile.write(reinterpret_cast<char*>(&newfi.MaxZ), sizeof(newfi.MaxZ));
+        }
+        WriteChunkHeader(outFile, "AMMV", newMDL.verticesCount * 12);
+        for (const auto& mv : jsonMDL["mainMipVertices"]) {
+            ss1_mdl_MipVertex newmv;
+            newmv.x = JSONFloatCheck(mv[0]);
+            newmv.y = JSONFloatCheck(mv[1]);
+            newmv.z = JSONFloatCheck(mv[2]);
+            outFile.write(reinterpret_cast<char*>(&newmv.x), sizeof(newmv.x));
+            outFile.write(reinterpret_cast<char*>(&newmv.y), sizeof(newmv.y));
+            outFile.write(reinterpret_cast<char*>(&newmv.z), sizeof(newmv.z));
+        }
+        WriteChunkHeader(outFile, "AVMK", newMDL.verticesCount * 4);
+        for (const auto& mm : jsonMDL["vertexMipMask"]) {
+            uint32_t newmm = mm;
+            outFile.write(reinterpret_cast<char*>(&newmm), sizeof(newmm));
+        }
+        WriteChunkHeader(outFile, "IMIP", 4);
+        MemberCount = jsonMDL["mips"].size();
+        outFile.write(reinterpret_cast<char*>(&MemberCount), sizeof(MemberCount));
+        WriteChunkHeader(outFile, "FMIP", 128);
+        for (const auto& vmm : jsonMDL["mipSwitchFactors"]) {
+            float newvmm = JSONFloatCheck(vmm);
+            outFile.write(reinterpret_cast<char*>(&newvmm), sizeof(newvmm));
+        }
+
+        for (const auto& mip : jsonMDL["mips"]) {
+            WriteChunkHeader(outFile, "IPOL", 4);
+            MemberCount = mip["polygons"].size();
+            outFile.write(reinterpret_cast<char*>(&MemberCount), sizeof(MemberCount));
+            for (const auto& poly : mip["polygons"]) {
+                if (!poly["newformat"]) {
+                    outFile.write("MDPLIMPV", 8);
+                    ChunkSize = 4;
+                    outFile.write(reinterpret_cast<char*>(&ChunkSize), sizeof(ChunkSize));
+                    MemberCount = poly["vertices"].size();
+                    outFile.write(reinterpret_cast<char*>(&MemberCount), sizeof(MemberCount));
+                    for (const auto& vert : poly["vertices"]) {
+                        ss1_mdl_PolygonVertex newvert;
+                        newvert.transformedVertexIndex = vert[0];
+                        newvert.textureVertexIndex = vert[1];
+                        outFile.write(reinterpret_cast<char*>(&newvert.transformedVertexIndex), sizeof(newvert.transformedVertexIndex));
+                        outFile.write(reinterpret_cast<char*>(&newvert.textureVertexIndex), sizeof(newvert.textureVertexIndex));
+                    }
+                    uint32_t renderFlags = poly["renderFlags"];
+                    uint32_t colorAndAlpha = poly["colorAndAlpha"];
+                    uint32_t surfaceIndex = poly["surfaceIndex"];
+                    uint32_t exONcolor = poly["exONcolor"];
+                    uint32_t exOFFcolor = poly["exOFFcolor"];
+                    outFile.write(reinterpret_cast<char*>(&renderFlags), sizeof(renderFlags));
+                    outFile.write(reinterpret_cast<char*>(&colorAndAlpha), sizeof(colorAndAlpha));
+                    outFile.write(reinterpret_cast<char*>(&surfaceIndex), sizeof(surfaceIndex));
+                    outFile.write(reinterpret_cast<char*>(&exONcolor), sizeof(exONcolor));
+                    outFile.write(reinterpret_cast<char*>(&exOFFcolor), sizeof(exOFFcolor));
+                }
+                else {
+                    outFile.write("MDP2", 4);
+                    MemberCount = poly["vertices"].size();
+                    outFile.write(reinterpret_cast<char*>(&MemberCount), sizeof(MemberCount));
+                    for (const auto& vert : poly["vertices"]) {
+                        ss1_mdl_PolygonVertex newvert;
+                        newvert.transformedVertexIndex = vert[0];
+                        newvert.textureVertexIndex = vert[1];
+                        outFile.write(reinterpret_cast<char*>(&newvert.transformedVertexIndex), sizeof(newvert.transformedVertexIndex));
+                        outFile.write(reinterpret_cast<char*>(&newvert.textureVertexIndex), sizeof(newvert.textureVertexIndex));
+                    }
+                    uint32_t renderFlags = poly["renderFlags"];
+                    uint32_t colorAndAlpha = poly["colorAndAlpha"];
+                    uint32_t surfaceIndex = poly["surfaceIndex"];
+                    outFile.write(reinterpret_cast<char*>(&renderFlags), sizeof(renderFlags));
+                    outFile.write(reinterpret_cast<char*>(&colorAndAlpha), sizeof(colorAndAlpha));
+                    outFile.write(reinterpret_cast<char*>(&surfaceIndex), sizeof(surfaceIndex));
+                }
+            }
+            MemberCount = mip["textureVertices"].size();
+            outFile.write(reinterpret_cast<char*>(&MemberCount), sizeof(MemberCount));
+            if (SS1_MDL_bHasPolygonsPerSurface) {
+                bool newformat = mip["textureVertices"][0]["newformat"];
+                if (!newformat) {
+                    WriteChunkHeader(outFile, "TXVT", 28 * MemberCount);
+                    for (const auto& tv : mip["textureVertices"]) {
+                        ss1_mdl_TextureVertex newTV;
+                        newTV.uvwX = JSONFloatCheck(tv["UVW"][0]);
+                        newTV.uvwY = JSONFloatCheck(tv["UVW"][1]);
+                        newTV.uvwZ = JSONFloatCheck(tv["UVW"][2]);
+                        newTV.u = JSONFloatCheck(tv["UV"][0]);
+                        newTV.v = JSONFloatCheck(tv["UV"][1]);
+                        newTV.done = tv["done"];
+                        newTV.transformedVertexIndex = tv["transformedVertexIndex"];
+                        outFile.write(reinterpret_cast<char*>(&newTV.uvwX), sizeof(newTV.uvwX));
+                        outFile.write(reinterpret_cast<char*>(&newTV.uvwY), sizeof(newTV.uvwY));
+                        outFile.write(reinterpret_cast<char*>(&newTV.uvwZ), sizeof(newTV.uvwZ));
+                        outFile.write(reinterpret_cast<char*>(&newTV.u), sizeof(newTV.u));
+                        outFile.write(reinterpret_cast<char*>(&newTV.v), sizeof(newTV.v));
+                        Write4ByteBool(outFile, newTV.done);
+                        outFile.write(reinterpret_cast<char*>(&newTV.transformedVertexIndex), sizeof(newTV.transformedVertexIndex));
+                    }
+                }
+                else {
+                    WriteChunkHeader(outFile, "TXV2", 52 * MemberCount);
+                    for (const auto& tv : mip["textureVertices"]) {
+                        ss1_mdl_TextureVertex newTV;
+                        newTV.uvwX = JSONFloatCheck(tv["UVW"][0]);
+                        newTV.uvwY = JSONFloatCheck(tv["UVW"][1]);
+                        newTV.uvwZ = JSONFloatCheck(tv["UVW"][2]);
+                        newTV.u = JSONFloatCheck(tv["UV"][0]);
+                        newTV.v = JSONFloatCheck(tv["UV"][1]);
+                        newTV.SurfaceIndex = tv["SurfaceIndex"];
+                        newTV.transformedVertexIndex = tv["transformedVertexIndex"];
+                        newTV.bumpU[0] = JSONFloatCheck(tv["bumpU"][0]);
+                        newTV.bumpU[1] = JSONFloatCheck(tv["bumpU"][1]);
+                        newTV.bumpU[2] = JSONFloatCheck(tv["bumpU"][2]);
+                        newTV.bumpV[0] = JSONFloatCheck(tv["bumpV"][0]);
+                        newTV.bumpV[1] = JSONFloatCheck(tv["bumpV"][1]);
+                        newTV.bumpV[2] = JSONFloatCheck(tv["bumpV"][2]);
+                        outFile.write(reinterpret_cast<char*>(&newTV.uvwX), sizeof(newTV.uvwX));
+                        outFile.write(reinterpret_cast<char*>(&newTV.uvwY), sizeof(newTV.uvwY));
+                        outFile.write(reinterpret_cast<char*>(&newTV.uvwZ), sizeof(newTV.uvwZ));
+                        outFile.write(reinterpret_cast<char*>(&newTV.u), sizeof(newTV.u));
+                        outFile.write(reinterpret_cast<char*>(&newTV.v), sizeof(newTV.v));
+                        outFile.write(reinterpret_cast<char*>(&newTV.SurfaceIndex), sizeof(newTV.SurfaceIndex));
+                        outFile.write(reinterpret_cast<char*>(&newTV.transformedVertexIndex), sizeof(newTV.transformedVertexIndex));
+                        outFile.write(reinterpret_cast<char*>(&newTV.bumpU[0]), sizeof(newTV.bumpU[0]));
+                        outFile.write(reinterpret_cast<char*>(&newTV.bumpU[1]), sizeof(newTV.bumpU[1]));
+                        outFile.write(reinterpret_cast<char*>(&newTV.bumpU[2]), sizeof(newTV.bumpU[2]));
+                        outFile.write(reinterpret_cast<char*>(&newTV.bumpV[0]), sizeof(newTV.bumpV[0]));
+                        outFile.write(reinterpret_cast<char*>(&newTV.bumpV[1]), sizeof(newTV.bumpV[1]));
+                        outFile.write(reinterpret_cast<char*>(&newTV.bumpV[2]), sizeof(newTV.bumpV[2]));
+                    }
+                }
+            }
+            else {
+                WriteChunkHeader(outFile, "TXVT", 24 * MemberCount);
+                for (const auto& tv : mip["textureVertices"]) {
+                    ss1_mdl_TextureVertex newTV;
+                    newTV.uvwX = JSONFloatCheck(tv["UVW"][0]);
+                    newTV.uvwY = JSONFloatCheck(tv["UVW"][1]);
+                    newTV.uvwZ = JSONFloatCheck(tv["UVW"][2]);
+                    newTV.u = JSONFloatCheck(tv["UV"][0]);
+                    newTV.v = JSONFloatCheck(tv["UV"][1]);
+                    newTV.done = tv["done"];
+                    outFile.write(reinterpret_cast<char*>(&newTV.uvwX), sizeof(newTV.uvwX));
+                    outFile.write(reinterpret_cast<char*>(&newTV.uvwY), sizeof(newTV.uvwY));
+                    outFile.write(reinterpret_cast<char*>(&newTV.uvwZ), sizeof(newTV.uvwZ));
+                    outFile.write(reinterpret_cast<char*>(&newTV.u), sizeof(newTV.u));
+                    outFile.write(reinterpret_cast<char*>(&newTV.v), sizeof(newTV.v));
+                    Write4ByteBool(outFile, newTV.done);
+                }
+            }
+            MemberCount = mip["mappingSurfaces"].size();
+            outFile.write(reinterpret_cast<char*>(&MemberCount), sizeof(MemberCount));
+            for (const auto& ms : mip["mappingSurfaces"]) {
+                ss1_mdl_MappingSurface newMS;
+                newMS.name = ms["name"];
+                newMS.surfaceOffsetX = JSONFloatCheck(ms["surfaceOffset"][0]);
+                newMS.surfaceOffsetY = JSONFloatCheck(ms["surfaceOffset"][1]);
+                newMS.surfaceOffsetZ = JSONFloatCheck(ms["surfaceOffset"][2]);
+                newMS.h = JSONFloatCheck(ms["hpb"][0]);
+                newMS.p = JSONFloatCheck(ms["hpb"][1]);
+                newMS.b = JSONFloatCheck(ms["hpb"][2]);
+                newMS.zoom = JSONFloatCheck(ms["zoom"]);
+                WriteCString(outFile, newMS.name);
+                outFile.write(reinterpret_cast<char*>(&newMS.surfaceOffsetX), sizeof(newMS.surfaceOffsetX));
+                outFile.write(reinterpret_cast<char*>(&newMS.surfaceOffsetY), sizeof(newMS.surfaceOffsetY));
+                outFile.write(reinterpret_cast<char*>(&newMS.surfaceOffsetZ), sizeof(newMS.surfaceOffsetZ));
+                outFile.write(reinterpret_cast<char*>(&newMS.h), sizeof(newMS.h));
+                outFile.write(reinterpret_cast<char*>(&newMS.p), sizeof(newMS.p));
+                outFile.write(reinterpret_cast<char*>(&newMS.b), sizeof(newMS.b));
+                outFile.write(reinterpret_cast<char*>(&newMS.zoom), sizeof(newMS.zoom)); 
+                if (SS1_MDL_bHasPolygonsPerSurface) {
+                    newMS.shadingType = ms["shadingType"];
+                    newMS.translucencyType = ms["translucencyType"];
+                    newMS.renderingFlags = ms["renderingFlags"];
+                    outFile.write(reinterpret_cast<char*>(&newMS.shadingType), sizeof(newMS.shadingType));
+                    outFile.write(reinterpret_cast<char*>(&newMS.translucencyType), sizeof(newMS.translucencyType));
+                    outFile.write(reinterpret_cast<char*>(&newMS.renderingFlags), sizeof(newMS.renderingFlags));
+                    uint32_t ItemCount = ms["polygonIndices"].size();
+                    outFile.write(reinterpret_cast<char*>(&ItemCount), sizeof(ItemCount));
+                    for (const auto& pi : ms["polygonIndices"]) {
+                        uint32_t npi = pi;
+                        outFile.write(reinterpret_cast<char*>(&npi), sizeof(npi));
+                    }
+                    ItemCount = ms["textureVertexIndices"].size();
+                    outFile.write(reinterpret_cast<char*>(&ItemCount), sizeof(ItemCount));
+                    for (const auto& vi : ms["textureVertexIndices"]) {
+                        uint32_t nvi = vi;
+                        outFile.write(reinterpret_cast<char*>(&nvi), sizeof(nvi));
+                    }
+                    newMS.color = ms["color"];
+                    outFile.write(reinterpret_cast<char*>(&newMS.color), sizeof(newMS.color));
+                }
+                if (SS1_MDL_bHasDiffuseColor) {
+                    newMS.diffuseColor = ms["diffuseColor"];
+                    newMS.reflectionColor = ms["reflectionColor"];
+                    newMS.specularColor = ms["specularColor"];
+                    newMS.bumpColor = ms["bumpColor"];
+                    newMS.onColorMask = ms["onColorMask"];
+                    newMS.offColorMask = ms["offColorMask"];
+                    outFile.write(reinterpret_cast<char*>(&newMS.diffuseColor), sizeof(newMS.diffuseColor));
+                    outFile.write(reinterpret_cast<char*>(&newMS.reflectionColor), sizeof(newMS.reflectionColor));
+                    outFile.write(reinterpret_cast<char*>(&newMS.specularColor), sizeof(newMS.specularColor));
+                    outFile.write(reinterpret_cast<char*>(&newMS.bumpColor), sizeof(newMS.bumpColor));
+                    outFile.write(reinterpret_cast<char*>(&newMS.onColorMask), sizeof(newMS.onColorMask));
+                    outFile.write(reinterpret_cast<char*>(&newMS.offColorMask), sizeof(newMS.offColorMask));
+                }
+            }
+            if (SS1_MDL_bHasPolygonalPatches) {
+                uint32_t flags = mip["flags"];
+                outFile.write(reinterpret_cast<char*>(&flags), sizeof(flags));
+                MemberCount = mip["patches"].size();
+                outFile.write(reinterpret_cast<char*>(&MemberCount), sizeof(MemberCount));
+                for (const auto& patch : mip["patches"]) {
+                    int32_t ctOccupied = patch["ctOccupied"];
+                    outFile.write(reinterpret_cast<char*>(&ctOccupied), sizeof(ctOccupied));
+                    if (ctOccupied != 0) {
+                        WriteChunkHeader(outFile, "OCPL", 4 * ctOccupied);
+                        for (const auto& pi : patch["PolygonIndices"]) {
+                            int32_t newpi = pi;
+                            outFile.write(reinterpret_cast<char*>(&newpi), sizeof(newpi));
+                        }
+                    }
+                }
+            }
+        }
+
+        newMDL.NewPatchFormat = jsonMDL["Patches"]["NewFormat"];
+        if (!newMDL.NewPatchFormat) {
+            uint32_t ulOldExistingPatches = 0;
+            uint32_t PatchChunkSize = 4;
+            for (int i = 0; i < 32; i++) {
+                string sbuffer = jsonMDL["Patches"]["Entries"][i]["textureName"];
+                if (sbuffer.size() > 0) {
+                    ulOldExistingPatches |= (1UL << i);
+                    PatchChunkSize += sbuffer.size() + 8;
+                }
+            }
+            WriteChunkHeader(outFile, "STMK", PatchChunkSize);
+            outFile.write(reinterpret_cast<char*>(&ulOldExistingPatches), sizeof(ulOldExistingPatches));
+            for (int i = 0; i < 32; i++)
+            {
+                if (((1UL << i) & ulOldExistingPatches) != 0)
+                {
+                    outFile.write("DFNM", 4);
+                    string sbuffer = jsonMDL["Patches"]["Entries"][i]["textureName"];
+                    WriteCString(outFile, sbuffer);
+                }
+            }
+        }
+        else {
+            outFile.write("PTC2", 4);
+            for (int i = 0; i < 32; i++) {
+                string sbuffer = jsonMDL["Patches"]["Entries"][i]["name"];
+                WriteCString(outFile, sbuffer);
+                outFile.write("DFNM", 4);
+                sbuffer = jsonMDL["Patches"]["Entries"][i]["textureName"];
+                WriteCString(outFile, sbuffer);
+                int32_t posU = jsonMDL["Patches"]["Entries"][i]["position"][0];
+                int32_t posV = jsonMDL["Patches"]["Entries"][i]["position"][1];
+                float stretch = JSONFloatCheck(jsonMDL["Patches"]["Entries"][i]["stretch"]);
+                outFile.write(reinterpret_cast<char*>(&posU), sizeof(posU));
+                outFile.write(reinterpret_cast<char*>(&posV), sizeof(posV));
+                outFile.write(reinterpret_cast<char*>(&stretch), sizeof(stretch));
+            }
+        }
+        WriteChunkHeader(outFile, "STXW", 4);
+        newMDL.texWidth = jmodelinfo["texWidth"];
+        outFile.write(reinterpret_cast<char*>(&newMDL.texWidth), sizeof(newMDL.texWidth));
+        WriteChunkHeader(outFile, "STXH", 4);
+        newMDL.texHeight = jmodelinfo["texHeight"];
+        outFile.write(reinterpret_cast<char*>(&newMDL.texHeight), sizeof(newMDL.texHeight));
+        if (!newMDL.NewPatchFormat) {
+            WriteChunkHeader(outFile, "POSS", 256);
+            for (int i = 0; i < 32; i++)
+            {
+                int32_t posU = jsonMDL["Patches"]["Entries"][i]["position"][0];
+                int32_t posV = jsonMDL["Patches"]["Entries"][i]["position"][1];
+                outFile.write(reinterpret_cast<char*>(&posU), sizeof(posU));
+                outFile.write(reinterpret_cast<char*>(&posV), sizeof(posV));
+            }
+        }
+        if (!SS1_MDL_bHasSavedFlagsOnStart)
+            outFile.write(reinterpret_cast<char*>(&newMDL.flags), sizeof(newMDL.flags));
+        newMDL.shadowQuality = jmodelinfo["shadowQuality"];
+        newMDL.stretch[0] = JSONFloatCheck(jmodelinfo["stretch"][0]);
+        newMDL.stretch[1] = JSONFloatCheck(jmodelinfo["stretch"][1]);
+        newMDL.stretch[2] = JSONFloatCheck(jmodelinfo["stretch"][2]);
+        outFile.write(reinterpret_cast<char*>(&newMDL.shadowQuality), sizeof(newMDL.shadowQuality));
+        outFile.write(reinterpret_cast<char*>(&newMDL.stretch[0]), sizeof(newMDL.stretch[0]));
+        outFile.write(reinterpret_cast<char*>(&newMDL.stretch[1]), sizeof(newMDL.stretch[1]));
+        outFile.write(reinterpret_cast<char*>(&newMDL.stretch[2]), sizeof(newMDL.stretch[2]));
+        if (SS1_MDL_bHasSavedCenter) {
+            newMDL.center[0] = JSONFloatCheck(jmodelinfo["center"][0]);
+            newMDL.center[1] = JSONFloatCheck(jmodelinfo["center"][1]);
+            newMDL.center[2] = JSONFloatCheck(jmodelinfo["center"][2]);
+            outFile.write(reinterpret_cast<char*>(&newMDL.center[0]), sizeof(newMDL.center[0]));
+            outFile.write(reinterpret_cast<char*>(&newMDL.center[1]), sizeof(newMDL.center[1]));
+            outFile.write(reinterpret_cast<char*>(&newMDL.center[2]), sizeof(newMDL.center[2]));
+        }
+        if (SS1_MDL_bHasMultipleCollisionBoxes) {
+            uint32_t ctCollisionBoxes = jsonMDL["CollisionBoxes"]["Entries"].size();
+            outFile.write(reinterpret_cast<char*>(&ctCollisionBoxes), sizeof(ctCollisionBoxes));
+            for (const auto& cb : jsonMDL["CollisionBoxes"]["Entries"]) {
+                ss1_mdl_CollisionBox newCB;
+                newCB.minX = JSONFloatCheck(cb["min"][0]);
+                newCB.minY = JSONFloatCheck(cb["min"][1]);
+                newCB.minZ = JSONFloatCheck(cb["min"][2]);
+                newCB.maxX = JSONFloatCheck(cb["max"][0]);
+                newCB.maxY = JSONFloatCheck(cb["max"][1]);
+                newCB.maxZ = JSONFloatCheck(cb["max"][2]);
+                newCB.name = cb["name"];
+                outFile.write(reinterpret_cast<char*>(&newCB.minX), sizeof(newCB.minX));
+                outFile.write(reinterpret_cast<char*>(&newCB.minY), sizeof(newCB.minY));
+                outFile.write(reinterpret_cast<char*>(&newCB.minZ), sizeof(newCB.minZ));
+                outFile.write(reinterpret_cast<char*>(&newCB.maxX), sizeof(newCB.maxX));
+                outFile.write(reinterpret_cast<char*>(&newCB.maxY), sizeof(newCB.maxY));
+                outFile.write(reinterpret_cast<char*>(&newCB.maxZ), sizeof(newCB.maxZ));
+                WriteCString(outFile, newCB.name);
+            }
+        }
+        else {
+            ss1_mdl_CollisionBox newCB;
+            newCB.minX = JSONFloatCheck(jsonMDL["CollisionBoxes"]["Entries"][0]["min"][0]);
+            newCB.minY = JSONFloatCheck(jsonMDL["CollisionBoxes"]["Entries"][0]["min"][1]);
+            newCB.minZ = JSONFloatCheck(jsonMDL["CollisionBoxes"]["Entries"][0]["min"][2]);
+            newCB.maxX = JSONFloatCheck(jsonMDL["CollisionBoxes"]["Entries"][0]["max"][0]);
+            newCB.maxY = JSONFloatCheck(jsonMDL["CollisionBoxes"]["Entries"][0]["max"][1]);
+            newCB.maxZ = JSONFloatCheck(jsonMDL["CollisionBoxes"]["Entries"][0]["max"][2]);
+            outFile.write(reinterpret_cast<char*>(&newCB.minX), sizeof(newCB.minX));
+            outFile.write(reinterpret_cast<char*>(&newCB.minY), sizeof(newCB.minY));
+            outFile.write(reinterpret_cast<char*>(&newCB.minZ), sizeof(newCB.minZ));
+            outFile.write(reinterpret_cast<char*>(&newCB.maxX), sizeof(newCB.maxX));
+            outFile.write(reinterpret_cast<char*>(&newCB.maxY), sizeof(newCB.maxY));
+            outFile.write(reinterpret_cast<char*>(&newCB.maxZ), sizeof(newCB.maxZ));
+        }
+        outFile.write("COLI", 4);
+        newMDL.collideAsCube = jsonMDL["CollisionBoxes"]["collideAsCube"];
+        Write4ByteBool(outFile, newMDL.collideAsCube);
+        if (SS1_MDL_bHasAttachedPositions) {
+            uint32_t ctAttachedPositions = jsonMDL["attachedPositions"].size();
+            outFile.write(reinterpret_cast<char*>(&ctAttachedPositions), sizeof(ctAttachedPositions));
+            for (const auto& ap : jsonMDL["attachedPositions"]) {
+                ss1_mdl_AttachedPosition newap;
+                newap.centerVertex = ap["centerVertex"];
+                newap.frontVertex= ap["frontVertex"];
+                newap.upVertex = ap["upVertex"];
+                newap.Position[0] = ap["Position"][0];
+                newap.Position[1] = ap["Position"][1];
+                newap.Position[2] = ap["Position"][2];
+                newap.Angle[0] = ap["Angle"][0];
+                newap.Angle[1] = ap["Angle"][1];
+                newap.Angle[2] = ap["Angle"][2];
+                outFile.write(reinterpret_cast<char*>(&newap.centerVertex), sizeof(newap.centerVertex));
+                outFile.write(reinterpret_cast<char*>(&newap.frontVertex), sizeof(newap.frontVertex));
+                outFile.write(reinterpret_cast<char*>(&newap.upVertex), sizeof(newap.upVertex));
+                outFile.write(reinterpret_cast<char*>(&newap.Position[0]), sizeof(newap.Position[0]));
+                outFile.write(reinterpret_cast<char*>(&newap.Position[1]), sizeof(newap.Position[1]));
+                outFile.write(reinterpret_cast<char*>(&newap.Position[2]), sizeof(newap.Position[2]));
+                outFile.write(reinterpret_cast<char*>(&newap.Angle[0]), sizeof(newap.Angle[0]));
+                outFile.write(reinterpret_cast<char*>(&newap.Angle[1]), sizeof(newap.Angle[1]));
+                outFile.write(reinterpret_cast<char*>(&newap.Angle[2]), sizeof(newap.Angle[2]));
+            }
+        }
+        WriteChunkHeader(outFile, "ICLN", 4);
+        uint32_t iValidColorsCt = 0;
+        for (const auto& cn : jsonMDL["colorNames"])
+            if (!cn.get_ref<const string&>().empty())
+                iValidColorsCt++;
+        outFile.write(reinterpret_cast<char*>(&iValidColorsCt), sizeof(iValidColorsCt));
+        for (int i = 0; i < 32; i++) {
+            string name = jsonMDL["colorNames"][i];
+            if (name.size() != 0) {
+                outFile.write(reinterpret_cast<char*>(&i), sizeof(i));
+                WriteCString(outFile, name);
+            }
+        }
+        outFile.write("ADAT", 4);
+        int ad_NumberOfAnims = jsonMDL["animations"].size();
+        outFile.write(reinterpret_cast<char*>(&ad_NumberOfAnims), sizeof(ad_NumberOfAnims));
+        for (const auto& anm : jsonMDL["animations"]) {
+            char name[32] = { 0 };
+            string sName = anm["name"];
+            strncpy(name, sName.c_str(), 31);
+            outFile.write(name, 32);
+            float SecondsPerFrame = JSONFloatCheck(anm["SecondsPerFrame"]);
+            outFile.write(reinterpret_cast<char*>(&SecondsPerFrame), sizeof(SecondsPerFrame));
+            int32_t numFrames = anm["FrameIndices"].size();
+            outFile.write(reinterpret_cast<char*>(&numFrames), sizeof(numFrames));
+            for (const auto& fi : anm["FrameIndices"]) {
+                int32_t newfi = fi;
+                outFile.write(reinterpret_cast<char*>(&newfi), sizeof(newfi));
+            }
+        }
+        if (SS1_MDL_bHasDiffuseColor) {
+            newMDL.colorDiffuse = jsonMDL["Colors"]["Diffuse"];
+            outFile.write(reinterpret_cast<char*>(&newMDL.colorDiffuse), sizeof(newMDL.colorDiffuse));
+        }
+        if (SS1_MDL_bHasColorForReflectionAndSpecularity) {
+            newMDL.colorReflections = jsonMDL["Colors"]["Reflections"];
+            newMDL.colorSpecular = jsonMDL["Colors"]["Specular"];
+            newMDL.colorBump = jsonMDL["Colors"]["Bump"];
+            outFile.write(reinterpret_cast<char*>(&newMDL.colorReflections), sizeof(newMDL.colorReflections));
+            outFile.write(reinterpret_cast<char*>(&newMDL.colorSpecular), sizeof(newMDL.colorSpecular));
+            outFile.write(reinterpret_cast<char*>(&newMDL.colorBump), sizeof(newMDL.colorBump));
+        }
+        
+        outFile.close();
+        cout << "MDL constructed successfully: " << outpath << endl;
+        if (NullsFound)
+            cout << "Null values to NaN floats converted: " << NullsFound << endl;
+    }
+    catch (exception& e) {
+        cout << "JSON Parsing Error: " << e.what() << endl;
+    }
 }
 
 SS1_MDL_file ParseSS1MDL(const fs::path& filePath) {
@@ -140,6 +668,8 @@ SS1_MDL_file ParseSS1MDL(const fs::path& filePath) {
                 inFile.read(reinterpret_cast<char*>(&newVert16old.y), sizeof(newVert16old.y));
                 inFile.read(reinterpret_cast<char*>(&newVert16old.z), sizeof(newVert16old.z));
                 inFile.read(reinterpret_cast<char*>(&newVert16old.normalIndex), sizeof(newVert16old.normalIndex));
+                uint8_t padding;
+                inFile.read(reinterpret_cast<char*>(&padding), sizeof(padding));//this is to be discarded
                 newMDL.frameVertices16_old.push_back(newVert16old);
             }
         }
@@ -268,12 +798,12 @@ SS1_MDL_file ParseSS1MDL(const fs::path& filePath) {
                     inFile.read(reinterpret_cast<char*>(&newTV.bumpV[2]), sizeof(newTV.bumpV[2]));
                 }
                 else {
-                    inFile.read(reinterpret_cast<char*>(&newTV.done), 4);//booleans have 4 bytes in this game
+                    newTV.done = Read4ByteBool(inFile);
                     inFile.read(reinterpret_cast<char*>(&newTV.transformedVertexIndex), sizeof(newTV.transformedVertexIndex));
                 }
             }
             else
-                inFile.read(reinterpret_cast<char*>(&newTV.done), 4);
+                newTV.done = Read4ByteBool(inFile);
             newmip.textureVertices.push_back(newTV);
         }
         inFile.read(reinterpret_cast<char*>(&MemberCount), sizeof(MemberCount));
@@ -428,7 +958,7 @@ SS1_MDL_file ParseSS1MDL(const fs::path& filePath) {
     inFile.seekg(-4, ios_base::cur);
     if (memcmp(ChunkBuffer, "COLI", 4) == 0) {
         ReadChunkSubHeader(inFile);
-        inFile.read(reinterpret_cast<char*>(&newMDL.collideAsCube), 4);//booleans have 4 bytes in this game
+        newMDL.collideAsCube = Read4ByteBool(inFile);
     }
     else
         newMDL.collideAsCube = false;
@@ -699,7 +1229,7 @@ void SS1MDL2JSON(const SS1_MDL_file& newMDL, const fs::path& outPath) {
         jcb["name"] = cb.name;
         jcollisioninfo["Entries"].push_back(jcb);
     }
-    jsonMDL["Patches"] = jcollisioninfo;
+    jsonMDL["CollisionBoxes"] = jcollisioninfo;
 
     jsonMDL["attachedPositions"] = json::array();
     for (const auto& ap : newMDL.attachedPositions) {
@@ -717,7 +1247,7 @@ void SS1MDL2JSON(const SS1_MDL_file& newMDL, const fs::path& outPath) {
         jsonMDL["colorNames"].push_back(cn);
     }
 
-    jsonMDL["ss1_mdl_AnimData"] = json::array();
+    jsonMDL["animations"] = json::array();
     for (const auto& anm : newMDL.animations) {
         json jan;
         jan["name"] = anm.name;
@@ -725,7 +1255,7 @@ void SS1MDL2JSON(const SS1_MDL_file& newMDL, const fs::path& outPath) {
         jan["FrameIndices"] = json::array();
         for (const auto& fi : anm.FrameIndices)
             jan["FrameIndices"].push_back(fi);
-        jsonMDL["ss1_mdl_AnimData"].push_back(jan);
+        jsonMDL["animations"].push_back(jan);
     }
     
     json jcolourinfo;

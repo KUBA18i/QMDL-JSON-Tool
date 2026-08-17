@@ -109,7 +109,7 @@ struct ss1_mdl_Mip {
 
 struct ss1_mdl_Patch {
     string name; //present in new format
-    string textureName; //sometimes present in old format
+    string textureName; //present in new format and sometimes in old format
     int32_t posU;
     int32_t posV;
     float stretch; //present in new format

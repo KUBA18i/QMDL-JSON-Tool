@@ -16,16 +16,24 @@ The reason why the JSON format script is in Python instead of C++ is because it 
 - Kingpin: Life of Crime's MDX files (IPDX ident)
 - Daikatana's DKM files, both versions (DKMD ident)
 - Quake 3's MD3 files (IDP3 ident)
+- Serious Sam 1's MDL files (MDAT ident)
 
 # Usage manual
 Drag and drop a model file to create a JSON file, and vice versa. If using the command line, you can just pass the path of the file you want to convert as an argument.
 
 After you have a JSON file, you can use `format_json.py` to remove the unnecessary spaces and newlines from the file; this decreases the file size significantly. Doing this is optional though.
 
+# Possible output differences
+The resulting files should be identical to the original model files, with the following exceptions:
+- Char arrays will often have trailing garbage data after the null terminator in the original file, while this program outputs a clean array of null bytes instead.
+- Some Serious Sam 1 models were originally exported with little regard to some of the data fields, and thus they often contain NaN floats and extreme values. The JSON serialiser turns NaN into null values, which the MDL exporter turns back into NaN floats, albeit with a likely different exact hex value.
+- Some SS1 models don't feature a COLI chunk, and thus have collision boxes set to spheres by default. The MDL exporter ensures that the COLI chunk is present.
+None of the above have any functional effects on the models themselves, and the games will load them like their normal counterparts.
+
 # Compile
 If using MSVS, open the SLN. If on Linux, you can use the included shell script. Otherwise:
 ```
-g++ main.cpp Q1MDL.cpp H2PoPMDL.cpp Q2MD2.cpp H2FM.cpp KPMDX.cpp DKM.cpp Q3MD3.cpp -o QMDL-JSON-Tool_linux -I.
+g++ main.cpp Q1MDL.cpp H2PoPMDL.cpp Q2MD2.cpp H2FM.cpp KPMDX.cpp DKM.cpp Q3MD3.cpp SS1MDL.cpp -o QMDL-JSON-Tool_linux -I.
 ```
 
 # Copyright
@@ -35,6 +43,7 @@ Quake was originally made by iD Software; its engine and model format was mostly
 RAPO and FlexModel formats are by Raven Software.  
 MDX format is by Xatrix Entertainment, aka Gray Matter Interactive.  
 DKM format is by Ion Storm.  
+Serious Sam 1 and its model format is by Croteam.  
 
 # References
 The information on how to parse the model files was loosely based on the following sources:
@@ -66,3 +75,6 @@ The information on how to parse the model files was loosely based on the followi
 
 ## Q3 MD3
 - https://icculus.org/homepages/phaethon/q3a/formats/md3format.html
+
+## SS1 MDL
+- https://github.com/Croteam-official/Serious-Engine/blob/b408e88a16fd01aa1cfd0e0a999c86c2c1437c9e/Sources/Engine/Models/Model.cpp#L1271

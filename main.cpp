@@ -51,7 +51,7 @@ void JSONChoiceSplit(fs::path inpath) {
         cout << "Identified Quake 1 model JSON." << endl;
         fs::path outPath = inpath;
         outPath.replace_extension(".mdl");
-        JSON2Q1MDL(inpath, outPath, jsoncontents);
+        WriteQ1MDL(outPath, JSON2Q1MDL(inpath, jsoncontents));
         return;
     }
     if (jheader.at("ident").get<string>() == "RAPO" && jheader.at("version").get<int>() == 50) {
@@ -126,7 +126,7 @@ int main(int argc, char* argv[]) {
 
         if (memcmp(ident, "IDPO", 4) == 0 && versionnum == 6) {
             cout << "Identified Quake 1 model file: " << string(ident, 4) << " and " << versionnum << endl;
-            Q1MDL2JSON(ParseQ1MDL(filePath), outPath);
+            Q1MDL2JSON(ReadQ1MDL(filePath), outPath);
         }
         else if (memcmp(ident, "RAPO", 4) == 0 && versionnum == 50) {
             cout << "Identified Hexen ][: Portals of Praevus model file: " << string(ident, 4) << " and " << versionnum << endl;

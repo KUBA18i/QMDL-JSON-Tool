@@ -105,6 +105,7 @@ struct Q1_MDL_file {
     vector<q1_FrameElement> allframes;
 };
 
-extern void JSON2Q1MDL(fs::path inpath, fs::path outpath, json jsonMDL);
-extern Q1_MDL_file ParseQ1MDL(fs::path inpath);
+extern Q1_MDL_file JSON2Q1MDL(fs::path inpath, json jsonMDL);
+extern void WriteQ1MDL(fs::path outpath, const Q1_MDL_file newMDL);
+extern Q1_MDL_file ReadQ1MDL(fs::path inpath);
 extern void Q1MDL2JSON(const Q1_MDL_file& NewMDL, fs::path outpath);

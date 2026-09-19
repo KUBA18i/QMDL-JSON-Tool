@@ -107,6 +107,7 @@ struct H2PoP_MDL_file {
     vector<h2pop_FrameElement> allframes;
 };
 
-extern void JSON2H2PoPMDL(fs::path inpath, fs::path outpath, json jsonMDL);
-extern H2PoP_MDL_file ParseH2PoPMDL(fs::path inpath);
+extern H2PoP_MDL_file JSON2H2PoPMDL(fs::path inpath, json jsonMDL);
+extern void WriteH2PoPMDL(fs::path outpath, const H2PoP_MDL_file newMDL);
+extern H2PoP_MDL_file ReadH2PoPMDL(fs::path inpath);
 extern void H2PoPMDL2JSON(const H2PoP_MDL_file& NewMDL, fs::path outpath);

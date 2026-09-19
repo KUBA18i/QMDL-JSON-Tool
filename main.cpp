@@ -58,7 +58,7 @@ void JSONChoiceSplit(fs::path inpath) {
         cout << "Identified Hexen ][: Portals of Praevus model JSON." << endl;
         fs::path outPath = inpath;
         outPath.replace_extension(".mdl");
-        JSON2H2PoPMDL(inpath, outPath, jsoncontents);
+        WriteH2PoPMDL(outPath, JSON2H2PoPMDL(inpath, jsoncontents));
         return;
     }
     if (jheader.at("ident").get<string>() == "IDP2" && jheader.at("version").get<int>() == 8) {
@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
         }
         else if (memcmp(ident, "RAPO", 4) == 0 && versionnum == 50) {
             cout << "Identified Hexen ][: Portals of Praevus model file: " << string(ident, 4) << " and " << versionnum << endl;
-            H2PoPMDL2JSON(ParseH2PoPMDL(filePath), outPath);
+            H2PoPMDL2JSON(ReadH2PoPMDL(filePath), outPath);
         }
         else if (memcmp(ident, "MDAT", 4) == 0) {
             cout << "Identified Serious Sam model file container: " << string(ident, 4) << endl;

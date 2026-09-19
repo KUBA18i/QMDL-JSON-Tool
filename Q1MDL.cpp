@@ -247,7 +247,6 @@ void WriteQ1MDL(fs::path outpath, const Q1_MDL_file newMDL) {
     }
 }
 
-
 Q1_MDL_file ReadQ1MDL(fs::path inpath){
     ifstream inFile(inpath, ios::binary);
     Q1_MDL_file NewMDL;

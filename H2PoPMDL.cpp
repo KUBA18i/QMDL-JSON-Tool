@@ -15,7 +15,160 @@ using namespace std;
 using json = nlohmann::ordered_json;
 namespace fs = filesystem;
 
-void JSON2H2PoPMDL(fs::path inpath, fs::path outpath, json jsonMDL) {
+
+H2PoP_MDL_file JSON2H2PoPMDL(fs::path inpath, json jsonMDL) {
+    try {
+        H2PoP_MDL_file newMDL;
+        newMDL.header.numSkins = jsonMDL["skins"].size();
+        newMDL.header.numTris = jsonMDL["triangles"].size();
+        newMDL.header.numFrames = jsonMDL["frames"].size();
+        newMDL.header.numStVerts = jsonMDL["UV"].size(); //RAPO addition
+
+        newMDL.header.numVerts = -1;
+        for (const auto& f : jsonMDL["frames"]) {
+            if (f["group"].get<bool>() == false) {
+                auto& sframe = f["frame"][0];
+                if (newMDL.header.numVerts == -1)
+                    newMDL.header.numVerts = sframe["verts"].size();
+                else if (newMDL.header.numVerts != sframe["verts"].size()) {
+                    cout << "Error: Frame " << (f["frame"][0]["name"]) << " has " << sframe["verts"].size() << " verts, but expected " << newMDL.header.numVerts << endl;
+                    exit(1);
+                }
+            }
+            else {
+                for (const auto& gframe : f["frames"]) {
+                    if (newMDL.header.numVerts == -1)
+                        newMDL.header.numVerts = gframe["verts"].size();
+                    else if (gframe["verts"].size() != newMDL.header.numVerts) {
+                        cout << "Error: Subframe " << gframe["name"] << " in group has " << gframe["verts"].size() << " verts, but expected " << newMDL.header.numVerts << endl;
+                        exit(1);
+                    }
+                }
+            }
+        }
+
+        newMDL.header.ident = 0x4F504152;//RAPO
+        newMDL.header.version = 50;
+
+        auto jheader = jsonMDL.at("header");
+        newMDL.header.scale[0] = jheader["scale"][0];
+        newMDL.header.scale[1] = jheader["scale"][1];
+        newMDL.header.scale[2] = jheader["scale"][2];
+        newMDL.header.translate[0] = jheader["translate"][0];
+        newMDL.header.translate[1] = jheader["translate"][1];
+        newMDL.header.translate[2] = jheader["translate"][2];
+        newMDL.header.boundingRadius = jheader["boundingRadius"];
+        newMDL.header.eyePosition[0] = jheader["eyePosition"][0];
+        newMDL.header.eyePosition[1] = jheader["eyePosition"][1];
+        newMDL.header.eyePosition[2] = jheader["eyePosition"][2];
+        newMDL.header.skinWidth = jheader["skinWidth"];
+        newMDL.header.skinHeight = jheader["skinHeight"];
+        newMDL.header.syncType = jheader["syncType"];
+        newMDL.header.flags = jheader["flags"];
+        newMDL.header.size = jheader["size"];
+
+        for (const auto& s : jsonMDL["skins"]) {
+            int group = s["group"].get<bool>() ? 1 : 0;
+            if (group == 0) {
+                h2pop_mdl_skin_t newSkin;
+                newSkin.group = 0;
+                newSkin.data = s["skin"].get<vector<uint8_t>>();
+                newMDL.allskins.push_back(newSkin);
+            }
+            else {
+                h2pop_mdl_groupskin_t newSkinGroup;
+                newSkinGroup.group = 1;
+                newSkinGroup.nb = s["nb"];
+                newSkinGroup.time = s["time"].get<vector<float>>();
+                for (const auto& frameData : s["skins"]) {
+                    vector<uint8_t> data = frameData.get<vector<uint8_t>>();
+                    newSkinGroup.frames.push_back(data);
+                }
+                newMDL.allskins.push_back(newSkinGroup);
+            }
+        }
+
+        for (const auto& uv : jsonMDL["UV"]) {
+            h2pop_mdl_texcoord_t newTC;
+            newTC.onseam = uv[0].get<bool>() ? 32 : 0;
+            newTC.s = uv[1];
+            newTC.t = uv[2];
+            newMDL.UV.push_back(newTC);
+        }
+
+        for (const auto& tri : jsonMDL["triangles"]) {
+            h2pop_mdl_triangle_t newTriangle;
+            newTriangle.facesfront = tri["facesfront"].get<bool>() ? 1 : 0;
+            newTriangle.vertindex[0] = tri["vertindices"][0];
+            newTriangle.vertindex[1] = tri["vertindices"][1];
+            newTriangle.vertindex[2] = tri["vertindices"][2];
+            newTriangle.stindex[0] = tri["stindices"][0];
+            newTriangle.stindex[1] = tri["stindices"][1];
+            newTriangle.stindex[2] = tri["stindices"][2];
+            newMDL.triangles.push_back(newTriangle);
+        }
+
+        for (const auto& f : jsonMDL["frames"]) {
+            int group = f["group"].get<bool>() ? 1 : 0;
+            auto make_simple_frame = [&](const json& gframe) {
+                h2pop_mdl_simpleframe_t newSimpleFrame;
+                newSimpleFrame.bboxmin.v[0] = gframe["min"][0];
+                newSimpleFrame.bboxmin.v[1] = gframe["min"][1];
+                newSimpleFrame.bboxmin.v[2] = gframe["min"][2];
+                newSimpleFrame.bboxmin.normalIndex = gframe["min"][3];
+                newSimpleFrame.bboxmax.v[0] = gframe["max"][0];
+                newSimpleFrame.bboxmax.v[1] = gframe["max"][1];
+                newSimpleFrame.bboxmax.v[2] = gframe["max"][2];
+                newSimpleFrame.bboxmax.normalIndex = gframe["max"][3];
+                string sName = gframe["name"];
+                memset(newSimpleFrame.name, 0, sizeof(newSimpleFrame.name));
+                strncpy(newSimpleFrame.name, sName.c_str(), sizeof(newSimpleFrame.name) - 1);
+
+                for (const auto& v : gframe["verts"]) {
+                    h2pop_mdl_vertex_t newVert;
+                    newVert.v[0] = v[0];
+                    newVert.v[1] = v[1];
+                    newVert.v[2] = v[2];
+                    newVert.normalIndex = v[3];
+                    newSimpleFrame.verts.push_back(newVert);
+                }
+
+                return newSimpleFrame;
+                };
+
+            if (group == 0) {
+                h2pop_mdl_frame_t NewFrame;
+                NewFrame.type = 0;
+                NewFrame.frame = make_simple_frame(f["frame"][0]);
+                newMDL.allframes.push_back(NewFrame);
+            }
+            else {
+                h2pop_mdl_groupframe_t NewFrameGroup;
+                NewFrameGroup.type = 1;
+                NewFrameGroup.nb = f["nb"];
+                NewFrameGroup.min.v[0] = f["min"][0];
+                NewFrameGroup.min.v[1] = f["min"][1];
+                NewFrameGroup.min.v[2] = f["min"][2];
+                NewFrameGroup.min.normalIndex = f["min"][3];
+                NewFrameGroup.max.v[0] = f["max"][0];
+                NewFrameGroup.max.v[1] = f["max"][1];
+                NewFrameGroup.max.v[2] = f["max"][2];
+                NewFrameGroup.max.normalIndex = f["max"][3];
+                NewFrameGroup.time = f["time"].get<vector<float>>();
+                for (const auto& gframe : f["frames"])
+                    NewFrameGroup.frames.push_back(make_simple_frame(gframe));
+                newMDL.allframes.push_back(NewFrameGroup);
+            }
+        }
+        cout << "JSON parsed, creating MDL..." << endl;
+        return newMDL;
+    }
+    catch (exception& e) {
+        cout << "JSON Parsing Error: " << e.what() << endl;
+    }
+}
+
+void WriteH2PoPMDL(fs::path outpath, const H2PoP_MDL_file newMDL) {
     try {
         ofstream outFile(outpath, ios::binary);
         if (!outFile.is_open()) {
@@ -23,149 +176,73 @@ void JSON2H2PoPMDL(fs::path inpath, fs::path outpath, json jsonMDL) {
             return;
         }
 
-        h2pop_mdl_header_t new_header;
-        new_header.numSkins = jsonMDL["skins"].size();
-        new_header.numTris = jsonMDL["triangles"].size();
-        new_header.numFrames = jsonMDL["frames"].size();
-        new_header.numStVerts = jsonMDL["UV"].size(); //RAPO addition
-        
-        new_header.numVerts = -1;
-        for (const auto& f : jsonMDL["frames"]) {
-            if (f["group"].get<bool>() == false) {
-                auto& sframe = f["frame"][0];
-                if (new_header.numVerts == -1)
-                    new_header.numVerts = sframe["verts"].size();
-                else if (new_header.numVerts != sframe["verts"].size()) {
-                    cout << "Error: Frame " << (f["frame"][0]["name"]) << " has " << sframe["verts"].size() << " verts, but expected " << new_header.numVerts << endl;
-                    return;
-                }
-            }
-            else {
-                for (const auto& gframe : f["frames"]) {
-                    if (new_header.numVerts == -1)
-                        new_header.numVerts = gframe["verts"].size();
-                    else if (gframe["verts"].size() != new_header.numVerts) {
-                        cout << "Error: Subframe " << gframe["name"] << " in group has " << gframe["verts"].size() << " verts, but expected " << new_header.numVerts << endl;
-                        return;
+        outFile.write("RAPO", 4);
+        outFile.write(reinterpret_cast<const char*>(&newMDL.header.version), sizeof(newMDL.header.version));
+        outFile.write(reinterpret_cast<const char*>(&newMDL.header.scale), sizeof(newMDL.header.scale));
+        outFile.write(reinterpret_cast<const char*>(&newMDL.header.translate), sizeof(newMDL.header.translate));
+        outFile.write(reinterpret_cast<const char*>(&newMDL.header.boundingRadius), sizeof(newMDL.header.boundingRadius));
+        outFile.write(reinterpret_cast<const char*>(&newMDL.header.eyePosition), sizeof(newMDL.header.eyePosition));
+        outFile.write(reinterpret_cast<const char*>(&newMDL.header.numSkins), sizeof(newMDL.header.numSkins));
+        outFile.write(reinterpret_cast<const char*>(&newMDL.header.skinWidth), sizeof(newMDL.header.skinWidth));
+        outFile.write(reinterpret_cast<const char*>(&newMDL.header.skinHeight), sizeof(newMDL.header.skinHeight));
+        outFile.write(reinterpret_cast<const char*>(&newMDL.header.numVerts), sizeof(newMDL.header.numVerts));
+        outFile.write(reinterpret_cast<const char*>(&newMDL.header.numTris), sizeof(newMDL.header.numTris));
+        outFile.write(reinterpret_cast<const char*>(&newMDL.header.numFrames), sizeof(newMDL.header.numFrames));
+        outFile.write(reinterpret_cast<const char*>(&newMDL.header.syncType), sizeof(newMDL.header.syncType));
+        outFile.write(reinterpret_cast<const char*>(&newMDL.header.flags), sizeof(newMDL.header.flags));
+        outFile.write(reinterpret_cast<const char*>(&newMDL.header.size), sizeof(newMDL.header.size));
+        outFile.write(reinterpret_cast<const char*>(&newMDL.header.numStVerts), sizeof(newMDL.header.numStVerts)); //RAPO addition
+
+        for (const auto& skin : newMDL.allskins) {
+            visit([&](auto&& arg) {
+                outFile.write(reinterpret_cast<const char*>(&arg.group), sizeof(arg.group));
+                using T = decay_t<decltype(arg)>;
+                if constexpr (is_same_v<T, h2pop_mdl_groupskin_t>) {
+                    outFile.write(reinterpret_cast<const char*>(&arg.nb), sizeof(arg.nb));
+                    outFile.write(reinterpret_cast<const char*>(arg.time.data()), arg.time.size() * sizeof(float));
+                    for (const auto& frameData : arg.frames) {
+                        outFile.write(reinterpret_cast<const char*>(frameData.data()), frameData.size());
                     }
                 }
-            }
+                else
+                    outFile.write(reinterpret_cast<const char*>(arg.data.data()), arg.data.size());
+                }, skin);
         }
 
-        outFile.write("RAPO", 4);
-        new_header.version = 50;
-        outFile.write(reinterpret_cast<const char*>(&new_header.version), sizeof(new_header.version));
-
-        auto jheader = jsonMDL.at("header");
-        new_header.scale[0] = jheader["scale"][0];
-        new_header.scale[1] = jheader["scale"][1];
-        new_header.scale[2] = jheader["scale"][2];
-        new_header.translate[0] = jheader["translate"][0];
-        new_header.translate[1] = jheader["translate"][1];
-        new_header.translate[2] = jheader["translate"][2];
-        new_header.boundingRadius = jheader["boundingRadius"];
-        new_header.eyePosition[0] = jheader["eyePosition"][0];
-        new_header.eyePosition[1] = jheader["eyePosition"][1];
-        new_header.eyePosition[2] = jheader["eyePosition"][2];
-
-        outFile.write(reinterpret_cast<char*>(&new_header.scale), sizeof(new_header.scale));
-        outFile.write(reinterpret_cast<char*>(&new_header.translate), sizeof(new_header.translate));
-        outFile.write(reinterpret_cast<char*>(&new_header.boundingRadius), sizeof(new_header.boundingRadius));
-        outFile.write(reinterpret_cast<char*>(&new_header.eyePosition), sizeof(new_header.eyePosition));
-        
-        new_header.skinWidth = jheader["skinWidth"];
-        new_header.skinHeight = jheader["skinHeight"];
-        new_header.syncType = jheader["syncType"];
-        new_header.flags = jheader["flags"];
-        new_header.size = jheader["size"];
-
-        outFile.write(reinterpret_cast<char*>(&new_header.numSkins), sizeof(new_header.numSkins));
-        outFile.write(reinterpret_cast<char*>(&new_header.skinWidth), sizeof(new_header.skinWidth));
-        outFile.write(reinterpret_cast<char*>(&new_header.skinHeight), sizeof(new_header.skinHeight));
-        outFile.write(reinterpret_cast<char*>(&new_header.numVerts), sizeof(new_header.numVerts));
-        outFile.write(reinterpret_cast<char*>(&new_header.numTris), sizeof(new_header.numTris));
-        outFile.write(reinterpret_cast<char*>(&new_header.numFrames), sizeof(new_header.numFrames));
-        outFile.write(reinterpret_cast<char*>(&new_header.syncType), sizeof(new_header.syncType));
-        outFile.write(reinterpret_cast<char*>(&new_header.flags), sizeof(new_header.flags));
-        outFile.write(reinterpret_cast<char*>(&new_header.size), sizeof(new_header.size));
-        outFile.write(reinterpret_cast<char*>(&new_header.numStVerts), sizeof(new_header.numStVerts)); //RAPO addition
-
-        for (const auto& s : jsonMDL["skins"]) {
-            int group = s["group"].get<bool>() ? 1 : 0;
-            outFile.write(reinterpret_cast<char*>(&group), sizeof(group));
-            if (group == 0) {
-                vector<uint8_t> data = s["skin"].get<vector<uint8_t>>();
-                outFile.write(reinterpret_cast<char*>(data.data()), data.size());
-            }
-            else {
-                int nb = s["nb"];
-                outFile.write(reinterpret_cast<char*>(&nb), sizeof(nb));
-                vector<float> times = s["time"].get<vector<float>>();
-                outFile.write(reinterpret_cast<char*>(times.data()), times.size() * sizeof(float));
-                for (const auto& frameData : s["skins"]) {
-                    vector<uint8_t> data = frameData.get<vector<uint8_t>>();
-                    outFile.write(reinterpret_cast<char*>(data.data()), data.size());
-                }
-            }
+        for (const auto& uv : newMDL.UV) {
+            outFile.write(reinterpret_cast<const char*>(&uv.onseam), sizeof(uv.onseam));
+            outFile.write(reinterpret_cast<const char*>(&uv.s), sizeof(uv.s));
+            outFile.write(reinterpret_cast<const char*>(&uv.t), sizeof(uv.t));
         }
 
-        for (const auto& uv : jsonMDL["UV"]) {
-            int onseam = uv[0].get<bool>() ? 32 : 0;
-            int s = uv[1];
-            int t = uv[2];
-            outFile.write(reinterpret_cast<char*>(&onseam), sizeof(onseam));
-            outFile.write(reinterpret_cast<char*>(&s), sizeof(s));
-            outFile.write(reinterpret_cast<char*>(&t), sizeof(t));
+        for (const auto& tri : newMDL.triangles) {
+            outFile.write(reinterpret_cast<const char*>(&tri.facesfront), sizeof(tri.facesfront));
+            outFile.write(reinterpret_cast<const char*>(&tri.vertindex), sizeof(tri.vertindex));
+            outFile.write(reinterpret_cast<const char*>(&tri.stindex), sizeof(tri.stindex));
         }
 
-        for (const auto& tri : jsonMDL["triangles"]) {
-            int facesfront = tri["facesfront"].get<bool>() ? 1 : 0;
-            unsigned short vertindex[3] = { tri["vertindices"][0], tri["vertindices"][1], tri["vertindices"][2]};
-            unsigned short stindex[3] = { tri["stindices"][0], tri["stindices"][1], tri["stindices"][2]};
-            outFile.write(reinterpret_cast<char*>(&facesfront), sizeof(facesfront));
-            outFile.write(reinterpret_cast<char*>(vertindex), sizeof(vertindex));
-            outFile.write(reinterpret_cast<char*>(stindex), sizeof(stindex));
-        }
-
-        for (const auto& f : jsonMDL["frames"]) {
-            int group = f["group"].get<bool>() ? 1 : 0;
-            outFile.write(reinterpret_cast<char*>(&group), sizeof(group));
-
-            auto write_simple_frame = [&](const json& gframe) {
-                unsigned char bmin[4] = { gframe["min"][0], gframe["min"][1], gframe["min"][2], gframe["min"][3] };
-                unsigned char bmax[4] = { gframe["max"][0], gframe["max"][1], gframe["max"][2], gframe["max"][3] };
-                char name[16] = { 0 };
-                string sName = gframe["name"];
-                strncpy(name, sName.c_str(), 15);
-
-                outFile.write(reinterpret_cast<char*>(bmin), 4);
-                outFile.write(reinterpret_cast<char*>(bmax), 4);
-                outFile.write(name, 16);
-
-                for (const auto& v : gframe["verts"]) {
-                    unsigned char vert[4] = { v[0], v[1], v[2], v[3] };
-                    outFile.write(reinterpret_cast<char*>(vert), 4);
-                }
+        for (const auto& frame : newMDL.allframes) {
+            auto write_simple_frame = [&](const h2pop_mdl_simpleframe_t sframe) {
+                outFile.write(reinterpret_cast<const char*>(&sframe.bboxmin), sizeof(sframe.bboxmin));
+                outFile.write(reinterpret_cast<const char*>(&sframe.bboxmax), sizeof(sframe.bboxmax));
+                outFile.write(sframe.name, 16);
+                for (const auto& v : sframe.verts)
+                    outFile.write(reinterpret_cast<const char*>(&v), sizeof(v));
                 };
-
-            if (group == 0) {
-                write_simple_frame(f["frame"][0]);
-            }
-            else {
-                int nb = f["nb"];
-                outFile.write(reinterpret_cast<char*>(&nb), sizeof(nb));
-                unsigned char gmin[4] = { f["min"][0], f["min"][1], f["min"][2], f["min"][3] };
-                unsigned char gmax[4] = { f["max"][0], f["max"][1], f["max"][2], f["max"][3] };
-                outFile.write(reinterpret_cast<char*>(gmin), 4);
-                outFile.write(reinterpret_cast<char*>(gmax), 4);
-
-                vector<float> times = f["time"].get<vector<float>>();
-                outFile.write(reinterpret_cast<char*>(times.data()), times.size() * sizeof(float));
-
-                for (const auto& gframe : f["frames"]) {
-                    write_simple_frame(gframe);
+            visit([&](auto&& arg) {
+                outFile.write(reinterpret_cast<const char*>(&arg.type), sizeof(arg.type));
+                using T = decay_t<decltype(arg)>;
+                if constexpr (is_same_v<T, h2pop_mdl_groupframe_t>) {
+                    outFile.write(reinterpret_cast<const char*>(&arg.nb), sizeof(arg.nb));
+                    outFile.write(reinterpret_cast<const char*>(&arg.min), sizeof(arg.min));
+                    outFile.write(reinterpret_cast<const char*>(&arg.max), sizeof(arg.max));
+                    outFile.write(reinterpret_cast<const char*>(arg.time.data()), arg.time.size() * sizeof(float));
+                    for (const auto& sf : arg.frames)
+                        write_simple_frame(sf);
                 }
-            }
+                else
+                    write_simple_frame(arg.frame);
+                }, frame);
         }
 
         outFile.close();
@@ -173,11 +250,11 @@ void JSON2H2PoPMDL(fs::path inpath, fs::path outpath, json jsonMDL) {
 
     }
     catch (exception& e) {
-        cout << "JSON Parsing Error: " << e.what() << endl;
+        cout << "Error writing file: " << e.what() << endl;
     }
 }
 
-H2PoP_MDL_file ParseH2PoPMDL(fs::path inpath) {
+H2PoP_MDL_file ReadH2PoPMDL(fs::path inpath) {
     ifstream inFile(inpath, ios::binary);
     H2PoP_MDL_file NewMDL;
 
@@ -332,6 +409,7 @@ H2PoP_MDL_file ParseH2PoPMDL(fs::path inpath) {
 }
 
 void H2PoPMDL2JSON(const H2PoP_MDL_file& NewMDL, fs::path outpath) {
+
     json jsonMDL;
     json jheader;
     jheader["ident"] = "RAPO";
@@ -380,8 +458,8 @@ void H2PoPMDL2JSON(const H2PoP_MDL_file& NewMDL, fs::path outpath) {
     for (const auto& tri : NewMDL.triangles) {
         json s;
         s["facesfront"] = (bool)tri.facesfront;
-        s["vertindices"] = {tri.vertindex[0],tri.vertindex[1],tri.vertindex[2]};
-        s["stindices"] = {tri.stindex[0],tri.stindex[1],tri.stindex[2]};
+        s["vertindices"] = { tri.vertindex[0],tri.vertindex[1],tri.vertindex[2] };
+        s["stindices"] = { tri.stindex[0],tri.stindex[1],tri.stindex[2] };
         jsonMDL["triangles"].push_back(s);
     }
 

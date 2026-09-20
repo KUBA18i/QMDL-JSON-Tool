@@ -15,7 +15,111 @@ using namespace std;
 using json = nlohmann::ordered_json;
 namespace fs = filesystem;
 
-void JSON2Q2MD2(fs::path inpath, fs::path outpath, json jsonMD2) {
+Q2_MD2_file JSON2Q2MD2(fs::path inpath, json jsonMD2) {
+    try {
+        Q2_MD2_file newMD2;
+
+        newMD2.header.magic = 844121161;//IDP2
+        newMD2.header.version = 8;
+        newMD2.header.numSkins = jsonMD2["skins"].size();
+        newMD2.header.numTexCoords = jsonMD2["UV"].size();
+        newMD2.header.numTriangles = jsonMD2["triangles"].size();
+        newMD2.header.numFrames = jsonMD2["frames"].size();
+
+        newMD2.header.numVertices = -1;
+        for (const auto& f : jsonMD2["frames"]) {
+            if (newMD2.header.numVertices == -1)
+                newMD2.header.numVertices = f["verts"].size();
+            else if (newMD2.header.numVertices != f["verts"].size()) {
+                cout << "Error: Frame " << (f["name"]) << " has " << f["verts"].size() << " verts, but expected " << newMD2.header.numVertices << endl;
+                exit(1);
+            }
+        }
+
+        newMD2.header.numGlCommands = 0;
+        for (const auto& g : jsonMD2["glCommands"]) {
+            newMD2.header.numGlCommands++;
+            newMD2.header.numGlCommands += (g["verts"].size() * 3);
+        }
+        newMD2.header.numGlCommands++;
+
+        newMD2.header.frameSize = newMD2.header.numVertices * 4 + 40;
+
+        auto jheader = jsonMD2.at("header");
+        newMD2.header.skinWidth = jheader["skinWidth"];
+        newMD2.header.skinHeight = jheader["skinHeight"];
+                        
+        newMD2.header.offsetSkins = 68;
+        for (const auto& s : jsonMD2["skins"])
+            newMD2.skinpaths.push_back(s);
+        
+        newMD2.header.offsetTexCoords = newMD2.header.offsetSkins + newMD2.header.numSkins * 64;
+        for (const auto& uv : jsonMD2["UV"]) {
+            q2_md2_textureCoordinate_t newTC;
+            newTC.s = uv[0];
+            newTC.t = uv[1];
+            newMD2.UV.push_back(newTC);
+        }
+        
+        newMD2.header.offsetTriangles = newMD2.header.offsetTexCoords + newMD2.header.numTexCoords * 4;
+        for (const auto& tri : jsonMD2["triangles"]) {
+            q2_md2_triangle_t newTri;
+            newTri.vertexIndices[0] = tri[0];
+            newTri.vertexIndices[1] = tri[1];
+            newTri.vertexIndices[2] = tri[2];
+            newTri.textureIndices[0] = tri[3];
+            newTri.textureIndices[1] = tri[4];
+            newTri.textureIndices[2] = tri[5];
+            newMD2.triangles.push_back(newTri);
+        }
+        
+        newMD2.header.offsetFrames = newMD2.header.offsetTriangles + newMD2.header.numTriangles * 12;
+        for (const auto& f : jsonMD2["frames"]) {
+            q2_md2_frame_t newFrame;
+            newFrame.scale[0] = f["scale"][0];
+            newFrame.scale[1] = f["scale"][1];
+            newFrame.scale[2] = f["scale"][2];
+            newFrame.translate[0] = f["translate"][0];
+            newFrame.translate[1] = f["translate"][1];
+            newFrame.translate[2] = f["translate"][2];
+            string sName = f["name"];
+            memset(newFrame.name, 0, sizeof(newFrame.name));
+            strncpy(newFrame.name, sName.c_str(), sizeof(newFrame.name) - 1);
+            for (const auto& v : f["verts"]) {
+                q2_md2_triangleVertex_t newvert;
+                newvert.vertex[0] = v[0];
+                newvert.vertex[1] = v[1];
+                newvert.vertex[2] = v[2];
+                newvert.lightNormalIndex = v[3];
+                newFrame.vertices.push_back(newvert);
+            }
+            newMD2.frames.push_back(newFrame);
+        }
+        
+        newMD2.header.offsetGlCommands = newMD2.header.offsetFrames + newMD2.header.frameSize * newMD2.header.numFrames;
+        for (const auto& g : jsonMD2["glCommands"]) {
+            q2_md2_glCommand_t newGC;
+            newGC.count = g["verts"].size();
+            if (g["strip"].get<bool>() == false) newGC.count *= (-1);
+            for (const auto& v : g["verts"]) {
+                q2_md2_glCommandVertex_t newGV;
+                newGV.s = v[0];
+                newGV.t = v[1];
+                newGV.vertexIndex = v[2];
+                newGC.vertices.push_back(newGV);
+            }
+            newMD2.GLCommands.push_back(newGC);
+        }
+        newMD2.header.offsetEnd = newMD2.header.offsetGlCommands + newMD2.header.numGlCommands * 4;
+        cout << "JSON parsed, creating MD2..." << endl;
+        return newMD2;
+    }
+    catch (exception& e) {
+        cout << "JSON Parsing Error: " << e.what() << endl;
+    }
+}
+
+void WriteQ2MD2(fs::path outpath, Q2_MD2_file newMD2) {
     try {
         ofstream outFile(outpath, ios::binary);
         if (!outFile.is_open()) {
@@ -23,125 +127,67 @@ void JSON2Q2MD2(fs::path inpath, fs::path outpath, json jsonMD2) {
             return;
         }
 
-        q2_md2_header_t new_header;
-
-        new_header.version = 8;
-        new_header.numSkins = jsonMD2["skins"].size();
-        new_header.numTexCoords = jsonMD2["UV"].size();
-        new_header.numTriangles = jsonMD2["triangles"].size();
-        new_header.numFrames = jsonMD2["frames"].size();
-
-        new_header.numVertices = -1;
-        for (const auto& f : jsonMD2["frames"]) {
-            if (new_header.numVertices == -1)
-                new_header.numVertices = f["verts"].size();
-            else if (new_header.numVertices != f["verts"].size()) {
-                cout << "Error: Frame " << (f["name"]) << " has " << f["verts"].size() << " verts, but expected " << new_header.numVertices << endl;
-                return;
-            }
-        }
-
-        new_header.numGlCommands = 0;
-        for (const auto& g : jsonMD2["glCommands"]) {
-            new_header.numGlCommands++;
-            new_header.numGlCommands += (g["verts"].size() * 3);
-        }
-        new_header.numGlCommands++;
-
-        new_header.frameSize = new_header.numVertices * 4 + 40;
-
-        auto jheader = jsonMD2.at("header");
-        new_header.skinWidth = jheader["skinWidth"];
-        new_header.skinHeight = jheader["skinHeight"];
-        
         outFile.write("IDP2", 4);
-        outFile.write(reinterpret_cast<char*>(&new_header.version), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.skinWidth), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.skinHeight), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.frameSize), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.numSkins), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.numVertices), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.numTexCoords), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.numTriangles), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.numGlCommands), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.numFrames), sizeof(int));
-        for (int i = 0; i < 24; i++) outFile.write("X", 1);
-        
-        new_header.offsetSkins = outFile.tellp();
-        for (const auto& s : jsonMD2["skins"]) {
+        outFile.write(reinterpret_cast<const char*>(&newMD2.header.version), sizeof(int));
+        outFile.write(reinterpret_cast<const char*>(&newMD2.header.skinWidth), sizeof(int));
+        outFile.write(reinterpret_cast<const char*>(&newMD2.header.skinHeight), sizeof(int));
+        outFile.write(reinterpret_cast<const char*>(&newMD2.header.frameSize), sizeof(int));
+        outFile.write(reinterpret_cast<const char*>(&newMD2.header.numSkins), sizeof(int));
+        outFile.write(reinterpret_cast<const char*>(&newMD2.header.numVertices), sizeof(int));
+        outFile.write(reinterpret_cast<const char*>(&newMD2.header.numTexCoords), sizeof(int));
+        outFile.write(reinterpret_cast<const char*>(&newMD2.header.numTriangles), sizeof(int));
+        outFile.write(reinterpret_cast<const char*>(&newMD2.header.numGlCommands), sizeof(int));
+        outFile.write(reinterpret_cast<const char*>(&newMD2.header.numFrames), sizeof(int));
+        outFile.write(reinterpret_cast<const char*>(&newMD2.header.offsetSkins), sizeof(int));
+        outFile.write(reinterpret_cast<const char*>(&newMD2.header.offsetTexCoords), sizeof(int));
+        outFile.write(reinterpret_cast<const char*>(&newMD2.header.offsetTriangles), sizeof(int));
+        outFile.write(reinterpret_cast<const char*>(&newMD2.header.offsetFrames), sizeof(int));
+        outFile.write(reinterpret_cast<const char*>(&newMD2.header.offsetGlCommands), sizeof(int));
+        outFile.write(reinterpret_cast<const char*>(&newMD2.header.offsetEnd), sizeof(int));
+
+        for (const auto& s : newMD2.skinpaths) {
             char name[64] = { 0 };
-            string sName = s;
-            strncpy(name, sName.c_str(), 63);
+            strncpy(name, s.c_str(), 63);
             outFile.write(name, 64);
         }
-        
-        new_header.offsetTexCoords = outFile.tellp();
-        for (const auto& uv : jsonMD2["UV"]) {
-            short s = uv[0];
-            short t = uv[1];
-            outFile.write(reinterpret_cast<char*>(&s), sizeof(s));
-            outFile.write(reinterpret_cast<char*>(&t), sizeof(t));
-        }
-        
-        new_header.offsetTriangles = outFile.tellp();
-        for (const auto& tri : jsonMD2["triangles"]) {
-            short t[6] = { tri[0], tri[1], tri[2], tri[3], tri[4], tri[5] };
-            outFile.write(reinterpret_cast<char*>(t), sizeof(t));
-        }
-        
-        new_header.offsetFrames = outFile.tellp();
-        for (const auto& f : jsonMD2["frames"]) {
-            float scale[3] = { f["scale"][0], f["scale"][1], f["scale"][2]};
-            float translate[3] = { f["translate"][0], f["translate"][1], f["translate"][2] };
-            char name[16] = { 0 };
-            string sName = f["name"];
-            strncpy(name, sName.c_str(), 15);
 
-            outFile.write(reinterpret_cast<char*>(&scale), sizeof(scale));
-            outFile.write(reinterpret_cast<char*>(&translate), sizeof(translate));
-            outFile.write(name, 16);
+        for (const auto& uv : newMD2.UV) {
+            outFile.write(reinterpret_cast<const char*>(&uv.s), sizeof(uv.s));
+            outFile.write(reinterpret_cast<const char*>(&uv.t), sizeof(uv.t));
+        }
 
-            for (const auto& v : f["verts"]) {
-                uint8_t vert[4] = { v[0], v[1], v[2], v[3] };
-                outFile.write(reinterpret_cast<char*>(&vert), 4);
-            }
+        for (const auto& tri : newMD2.triangles)
+            outFile.write(reinterpret_cast<const char*>(&tri), sizeof(tri));
+
+        for (const auto& f : newMD2.frames) {
+            outFile.write(reinterpret_cast<const char*>(&f.scale), sizeof(f.scale));
+            outFile.write(reinterpret_cast<const char*>(&f.translate), sizeof(f.translate));
+            outFile.write(f.name, 16);
+            for (const auto& v : f.vertices)
+                outFile.write(reinterpret_cast<const char*>(&v), sizeof(v));
         }
         
-        new_header.offsetGlCommands = outFile.tellp();
-        for (const auto& g : jsonMD2["glCommands"]) {
-            int vcount = g["verts"].size();
-            if (g["strip"].get<bool>() == false) vcount *= (-1);
-            outFile.write(reinterpret_cast<char*>(&vcount), sizeof(vcount));
-            for (const auto& v : g["verts"]) {
-                float vs = v[0];
-                float vt = v[1];
-                int vertexIndex = v[2];
-                outFile.write(reinterpret_cast<char*>(&vs), sizeof(vs));
-                outFile.write(reinterpret_cast<char*>(&vt), sizeof(vt));
-                outFile.write(reinterpret_cast<char*>(&vertexIndex), sizeof(vertexIndex));
+        for (const auto& g : newMD2.GLCommands) {
+            outFile.write(reinterpret_cast<const char*>(&g.count), sizeof(g.count));
+            for (const auto& v : g.vertices) {
+                outFile.write(reinterpret_cast<const char*>(&v.s), sizeof(v.s));
+                outFile.write(reinterpret_cast<const char*>(&v.t), sizeof(v.t));
+                outFile.write(reinterpret_cast<const char*>(&v.vertexIndex), sizeof(v.vertexIndex));
             }
         }
         outFile.write("\0\0\0\0", 4);
-        new_header.offsetEnd = outFile.tellp();
-
-        outFile.seekp(44);
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetSkins), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetTexCoords), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetTriangles), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetFrames), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetGlCommands), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetEnd), sizeof(int));
+        if (newMD2.header.offsetEnd != outFile.tellp())
+            cout << "Warning: offsetEnd doesn't match the end of the file: " << newMD2.header.offsetEnd << " vs " << outFile.tellp() << endl;
 
         outFile.close();
         cout << "MD2 constructed successfully: " << outpath << endl;
-
     }
     catch (exception& e) {
         cout << "JSON Parsing Error: " << e.what() << endl;
     }
 }
 
-Q2_MD2_file ParseQ2MD2(fs::path inpath) {
+Q2_MD2_file ReadQ2MD2(fs::path inpath) {
     ifstream inFile(inpath, ios::binary);
     Q2_MD2_file NewMD2;
 

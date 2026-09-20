@@ -65,7 +65,7 @@ void JSONChoiceSplit(fs::path inpath) {
         cout << "Identified Quake 2 model JSON." << endl;
         fs::path outPath = inpath;
         outPath.replace_extension(".md2");
-        JSON2Q2MD2(inpath, outPath, jsoncontents);
+        WriteQ2MD2(outPath, JSON2Q2MD2(inpath, jsoncontents));
         return;
     }
     if (jheader.at("ident").get<string>() == "IDPX" && jheader.at("version").get<int>() == 4) {
@@ -160,7 +160,7 @@ int main(int argc, char* argv[]) {
 
         if (memcmp(ident, "IDP2", 4) == 0 && versionnum == 8) {
             cout << "Identified Quake 2 model file: " << string(ident, 4) << " and " << versionnum << endl;
-            Q2MD22JSON(ParseQ2MD2(filePath), outPath);
+            Q2MD22JSON(ReadQ2MD2(filePath), outPath);
         }
         else {
             cout << "Error: Invalid ident and version numbers: " << string(ident, 4) << " and " << versionnum << endl;

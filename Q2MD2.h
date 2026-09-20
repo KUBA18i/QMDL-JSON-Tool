@@ -83,6 +83,7 @@ struct Q2_MD2_file {
     vector<q2_md2_glCommand_t> GLCommands;
 };
 
-extern void JSON2Q2MD2(fs::path inpath, fs::path outpath, json jsonMD2);
-extern Q2_MD2_file ParseQ2MD2(fs::path inpath);
+extern Q2_MD2_file JSON2Q2MD2(fs::path inpath, json jsonMD2);
+extern void WriteQ2MD2(fs::path outpath, const Q2_MD2_file newMD2);
+extern Q2_MD2_file ReadQ2MD2(fs::path inpath);
 extern void Q2MD22JSON(const Q2_MD2_file& NewMD2, fs::path outpath);

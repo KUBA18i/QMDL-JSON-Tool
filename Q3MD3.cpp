@@ -15,7 +15,153 @@ using namespace std;
 using json = nlohmann::ordered_json;
 namespace fs = filesystem;
 
-void JSON2Q3MD3(fs::path inpath, fs::path outpath, json jsonMD3) {
+Q3_MD3_file JSON2Q3MD3(fs::path inpath, json jsonMD3) {
+    try {
+        Q3_MD3_file newMD3;
+        newMD3.header.ident = 1367369843;//IDP3
+        newMD3.header.version = 15;
+
+        newMD3.header.numFrames = jsonMD3["frames"].size();
+        if (newMD3.header.numFrames != jsonMD3["tags"].size())
+            cout << "Error: Frame count mismatch with tag frames " << newMD3.header.numFrames << " vs " << jsonMD3["tags"].size() << endl;
+        newMD3.header.numTags = -1;
+        for (const auto& tf : jsonMD3["tags"]) {
+            if (newMD3.header.numTags == -1)
+                newMD3.header.numTags = tf.size();
+            else if (newMD3.header.numTags != tf.size()) {
+                cout << "Error: Tag frame has " << tf.size() << " tags, but expected " << newMD3.header.numTags << endl;
+                exit(1);
+            }
+        }
+        newMD3.header.numSurfaces = jsonMD3["surfaces"].size();
+                
+        auto jheader = jsonMD3.at("header");
+        newMD3.header.modelname = jheader["name"];
+        newMD3.header.numSkins = jheader["numSkins"];
+        newMD3.header.flags = jheader["flags"];
+                
+        newMD3.header.offsetFrames = 108;
+        for (const auto& f : jsonMD3["frames"]) {
+            q3_md3_frame_t newFrame;
+            newFrame.minBounds[0] = f["minBounds"][0];
+            newFrame.minBounds[1] = f["minBounds"][1];
+            newFrame.minBounds[2] = f["minBounds"][2];
+            newFrame.maxBounds[0] = f["maxBounds"][0];
+            newFrame.maxBounds[1] = f["maxBounds"][1];
+            newFrame.maxBounds[2] = f["maxBounds"][2];
+            newFrame.localOrigin[0] = f["localOrigin"][0];
+            newFrame.localOrigin[1] = f["localOrigin"][1];
+            newFrame.localOrigin[2] = f["localOrigin"][2];
+            newFrame.radius = f["radius"];
+            newFrame.name = f["name"];
+            char name[16] = { 0 };
+            newMD3.frames.push_back(newFrame);
+        }
+        
+        newMD3.header.offsetTags = newMD3.header.offsetFrames + newMD3.header.numFrames * 56;
+        for (const auto& tf : jsonMD3["tags"]) {
+            q3_md3_tagCollection_t newTC;
+            for (const auto& t : tf) {
+                q3_md3_tag_t newTag;
+                newTag.name = t["name"];
+                newTag.origin[0] = t["origin"][0];
+                newTag.origin[1] = t["origin"][1];
+                newTag.origin[2] = t["origin"][2];
+                newTag.axis[0] = t["axis"][0];
+                newTag.axis[1] = t["axis"][1];
+                newTag.axis[2] = t["axis"][2];
+                newTag.axis[3] = t["axis"][3];
+                newTag.axis[4] = t["axis"][4];
+                newTag.axis[5] = t["axis"][5];
+                newTag.axis[6] = t["axis"][6];
+                newTag.axis[7] = t["axis"][7];
+                newTag.axis[8] = t["axis"][8];
+                newTC.tags.push_back(newTag);
+            }
+            newMD3.tagframes.push_back(newTC);
+        }
+        
+        newMD3.header.offsetSurfaces = newMD3.header.offsetTags + newMD3.header.numFrames * newMD3.header.numTags * 112;
+        newMD3.header.offsetEnd = newMD3.header.offsetSurfaces;//not the final value
+        for (const auto& surface : jsonMD3["surfaces"]) {
+            q3_md3_surface_t newSurf;
+            newSurf.ident = 1367369843;//IDP3
+            newSurf.surfacename = surface["name"];
+            newSurf.flags = surface["flags"];
+            newSurf.numFrames = surface["numFrames"];
+            if (newSurf.numFrames != newMD3.header.numFrames) {
+                cout << "Error: Frame count mismatch in surface:" << newSurf.surfacename << endl;
+                exit(1);
+            }
+            newSurf.numShaders = surface["shaders"].size();
+            newSurf.numVerts = -1;
+            for (const auto& vf : surface["vertexFrames"]) {
+                if (newSurf.numVerts == -1)
+                    newSurf.numVerts = vf.size();
+                else if (newSurf.numVerts != vf.size()) {
+                    cout << "Error: Vertex count mismatch in surface:" << newSurf.surfacename << endl;
+                    cout << "Vertex frame has " << vf.size() << " tags, but expected " << newSurf.numVerts << endl;
+                    exit(1);
+                }
+            }
+            if (newSurf.numVerts != surface["UV"].size()) {
+                cout << "Error: Vertex count mismatch in surface:" << newSurf.surfacename << endl;
+                cout << "UV mismatch between frame vertices." << endl;
+                exit(1);
+            }
+            newSurf.numTriangles = surface["triangles"].size();
+            
+            newSurf.offsetShaders = 108;
+            for (const auto& s : surface["shaders"]) {
+                q3_md3_shader_t newShader;
+                newShader.name = s[0];
+                newShader.shaderIndex = s[1];
+                newSurf.shaders.push_back(newShader);
+            }
+            
+            newSurf.offsetTriangles = newSurf.offsetShaders + newSurf.numShaders * 68;
+            for (const auto& t : surface["triangles"]) {
+                q3_md3_triangle_t newTri;
+                newTri.indices[0] = t[0];
+                newTri.indices[1] = t[1];
+                newTri.indices[2] = t[2];
+                newSurf.triangles.push_back(newTri);
+            }
+
+            newSurf.offsetUV = newSurf.offsetTriangles + newSurf.numTriangles * 12;
+            for (const auto& tc : surface["UV"]) {
+                q3_md3_texCoord_t newTC;
+                newTC.s = tc[0];
+                newTC.t = tc[1];
+                newSurf.UV.push_back(newTC);
+            }
+
+            newSurf.offsetVertices = newSurf.offsetUV + newSurf.numVerts * 8;
+            for (const auto& vf : surface["vertexFrames"]) {
+                q3_md3_vertexFrame_t newFrame;
+                for (const auto& v : vf) {
+                    q3_md3_vertex_t newVert;\
+                    newVert.x = v[0];
+                    newVert.y = v[1];
+                    newVert.z = v[2];
+                    newVert.lightNormalIndex = v[3];
+                    newFrame.vertices.push_back(newVert);
+                }
+                newSurf.vertexFrames.push_back(newFrame);
+            }
+            newSurf.offsetEnd = newSurf.offsetVertices + newSurf.numVerts * newSurf.numFrames * 8;
+            newMD3.header.offsetEnd += newSurf.offsetEnd;
+            newMD3.surfaces.push_back(newSurf);
+        }
+        cout << "JSON parsed, creating MD3..." << endl;
+        return newMD3;
+    }
+    catch (exception& e) {
+        cout << "JSON Parsing Error: " << e.what() << endl;
+    }
+}
+
+void WriteQ3MD3(fs::path outpath, Q3_MD3_file newMD3) {
     try {
         ofstream outFile(outpath, ios::binary);
         if (!outFile.is_open()) {
@@ -23,175 +169,93 @@ void JSON2Q3MD3(fs::path inpath, fs::path outpath, json jsonMD3) {
             return;
         }
 
-        q3_md3_header_t new_header;
-        new_header.version = 15;
-
-        new_header.numFrames = jsonMD3["frames"].size();
-        
-        if (new_header.numFrames != jsonMD3["tags"].size())
-            cout << "Error: Frame count mismatch with tag frames " << new_header.numFrames << " vs " << jsonMD3["tags"].size() << endl;
-        
-        new_header.numTags = -1;
-        for (const auto& tf : jsonMD3["tags"]) {
-            if (new_header.numTags == -1)
-                new_header.numTags = tf.size();
-            else if (new_header.numTags != tf.size()) {
-                cout << "Error: Tag frame has " << tf.size() << " tags, but expected " << new_header.numTags << endl;
-                return;
-            }
-        }
-
-        new_header.numSurfaces = jsonMD3["surfaces"].size();
-                
-        auto jheader = jsonMD3.at("header");
-        new_header.modelname = jheader["name"];
-        new_header.numSkins = jheader["numSkins"];
-        new_header.flags = jheader["flags"];
-        
         outFile.write("IDP3", 4);
-        outFile.write(reinterpret_cast<char*>(&new_header.version), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMD3.header.version), sizeof(int));
         char modelname[64] = { 0 };
-        strncpy(modelname, new_header.modelname.c_str(), 63);
+        strncpy(modelname, newMD3.header.modelname.c_str(), 63);
         outFile.write(modelname, 64);
-        outFile.write(reinterpret_cast<char*>(&new_header.flags), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.numFrames), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.numTags), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.numSurfaces), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.numSkins), sizeof(int));
-        for (int i = 0; i < 16; i++) outFile.write("X", 1);
-        
-        new_header.offsetFrames = outFile.tellp();
-        for (const auto& f : jsonMD3["frames"]) {
-            float minBounds[3] = { f["minBounds"][0], f["minBounds"][1], f["minBounds"][2] };
-            float maxBounds[3] = { f["maxBounds"][0], f["maxBounds"][1], f["maxBounds"][2] };
-            float localOrigin[3] = { f["localOrigin"][0], f["localOrigin"][1], f["localOrigin"][2] };
-            float radius = f["radius"];
-            string fname = f["name"];
+        outFile.write(reinterpret_cast<char*>(&newMD3.header.flags), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMD3.header.numFrames), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMD3.header.numTags), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMD3.header.numSurfaces), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMD3.header.numSkins), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMD3.header.offsetFrames), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMD3.header.offsetTags), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMD3.header.offsetSurfaces), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMD3.header.offsetEnd), sizeof(int));
+
+        for (auto& f : newMD3.frames) {
+            outFile.write(reinterpret_cast<char*>(&f.minBounds), sizeof(f.minBounds));
+            outFile.write(reinterpret_cast<char*>(&f.maxBounds), sizeof(f.maxBounds));
+            outFile.write(reinterpret_cast<char*>(&f.localOrigin), sizeof(f.localOrigin));
+            outFile.write(reinterpret_cast<char*>(&f.radius), sizeof(f.radius));
             char name[16] = { 0 };
-            strncpy(name, fname.c_str(), 15);
-            
-            outFile.write(reinterpret_cast<char*>(&minBounds), sizeof(minBounds));
-            outFile.write(reinterpret_cast<char*>(&maxBounds), sizeof(maxBounds));
-            outFile.write(reinterpret_cast<char*>(&localOrigin), sizeof(localOrigin));
-            outFile.write(reinterpret_cast<char*>(&radius), sizeof(radius));
+            strncpy(name, f.name.c_str(), 15);
             outFile.write(name, 16);
         }
-        
-        new_header.offsetTags = outFile.tellp();
-        for (const auto& tf : jsonMD3["tags"]) {
-            for (const auto& t : tf) {
-                string fname = t["name"];
+
+        for (auto& tf : newMD3.tagframes) {
+            for (auto& t : tf.tags) {
                 char name[64] = { 0 };
-                strncpy(name, fname.c_str(), 63);
-                float origin[3] = { t["origin"][0], t["origin"][1], t["origin"][2] };
-                float axis[9] = { t["axis"][0], t["axis"][1], t["axis"][2], t["axis"][3], t["axis"][4], t["axis"][5], t["axis"][6], t["axis"][7], t["axis"][8] };
-
+                strncpy(name, t.name.c_str(), 63);
                 outFile.write(name, 64);
-                outFile.write(reinterpret_cast<char*>(&origin), sizeof(origin));
-                outFile.write(reinterpret_cast<char*>(&axis), sizeof(axis));
+                outFile.write(reinterpret_cast<char*>(&t.origin), sizeof(t.origin));
+                outFile.write(reinterpret_cast<char*>(&t.axis), sizeof(t.axis));
             }
         }
-        
-        new_header.offsetSurfaces = outFile.tellp();
-        for (const auto& surface : jsonMD3["surfaces"]) {
-            int offsetSurfaceStart = outFile.tellp();
+
+        for (auto& surface : newMD3.surfaces) {
             outFile.write("IDP3", 4);
-            q3_md3_surface_t tempsurf;
-            
             char CSurfaceName[64] = { 0 };
-            tempsurf.surfacename = surface["name"];
-            strncpy(CSurfaceName, tempsurf.surfacename.c_str(), 63);
+            strncpy(CSurfaceName, surface.surfacename.c_str(), 63);
             outFile.write(CSurfaceName, 64);
-            tempsurf.flags = surface["flags"];
-            tempsurf.numFrames = surface["numFrames"];
-            if (tempsurf.numFrames != new_header.numFrames) {
-                cout << "Error: Frame count mismatch in surface:" << tempsurf.surfacename << endl;
-                return;
-            }
-            tempsurf.numShaders = surface["shaders"].size();
-            tempsurf.numVerts = -1;
-            for (const auto& vf : surface["vertexFrames"]) {
-                if (tempsurf.numVerts == -1)
-                    tempsurf.numVerts = vf.size();
-                else if (tempsurf.numVerts != vf.size()) {
-                    cout << "Error: Vertex count mismatch in surface:" << tempsurf.surfacename << endl;
-                    cout << "Vertex frame has " << vf.size() << " tags, but expected " << tempsurf.numVerts << endl;
-                    return;
-                }
-            }
-            if (tempsurf.numVerts != surface["UV"].size()) {
-                cout << "Error: Vertex count mismatch in surface:" << tempsurf.surfacename << endl;
-                cout << "UV mismatch between frame vertices." << endl;
-                return;
-            }
-            tempsurf.numTriangles = surface["triangles"].size();
+            outFile.write(reinterpret_cast<char*>(&surface.flags), sizeof(surface.flags));
+            outFile.write(reinterpret_cast<char*>(&surface.numFrames), sizeof(surface.numFrames));
+            outFile.write(reinterpret_cast<char*>(&surface.numShaders), sizeof(surface.numShaders));
+            outFile.write(reinterpret_cast<char*>(&surface.numVerts), sizeof(surface.numVerts));
+            outFile.write(reinterpret_cast<char*>(&surface.numTriangles), sizeof(surface.numTriangles));
+            outFile.write(reinterpret_cast<char*>(&surface.offsetTriangles), sizeof(surface.offsetTriangles));
+            outFile.write(reinterpret_cast<char*>(&surface.offsetShaders), sizeof(surface.offsetShaders));
+            outFile.write(reinterpret_cast<char*>(&surface.offsetUV), sizeof(surface.offsetUV));
+            outFile.write(reinterpret_cast<char*>(&surface.offsetVertices), sizeof(surface.offsetVertices));
+            outFile.write(reinterpret_cast<char*>(&surface.offsetEnd), sizeof(surface.offsetEnd));
 
-            outFile.write(reinterpret_cast<char*>(&tempsurf.flags), sizeof(tempsurf.flags));
-            outFile.write(reinterpret_cast<char*>(&tempsurf.numFrames), sizeof(tempsurf.numFrames));
-            outFile.write(reinterpret_cast<char*>(&tempsurf.numShaders), sizeof(tempsurf.numShaders));
-            outFile.write(reinterpret_cast<char*>(&tempsurf.numVerts), sizeof(tempsurf.numVerts));
-            outFile.write(reinterpret_cast<char*>(&tempsurf.numTriangles), sizeof(tempsurf.numTriangles));
-            for (int i = 0; i < 20; i++) outFile.write("X", 1);
-            
-            tempsurf.offsetShaders = (int)outFile.tellp() - offsetSurfaceStart;
-            for (const auto& s : surface["shaders"]) {
+            for (auto& s : surface.shaders) {
                 char cShaderName[64] = { 0 };
-                string sShaderName = s[0];
-                strncpy(cShaderName, sShaderName.c_str(), 63);
+                strncpy(cShaderName, s.name.c_str(), 63);
                 outFile.write(cShaderName, 64);
-                int shaderIndex = s[1];
-                outFile.write(reinterpret_cast<char*>(&shaderIndex), sizeof(shaderIndex));
-            }
-            
-            tempsurf.offsetTriangles = (int)outFile.tellp() - offsetSurfaceStart;
-            for (const auto& t : surface["triangles"]) {
-                int indices[3] = { t[0], t[1], t[2] };
-                outFile.write(reinterpret_cast<char*>(&indices), sizeof(indices));
+                outFile.write(reinterpret_cast<char*>(&s.shaderIndex), sizeof(s.shaderIndex));
             }
 
-            tempsurf.offsetUV = (int)outFile.tellp() - offsetSurfaceStart;
-            for (const auto& tc : surface["UV"]) {
-                float s = tc[0];
-                float t = tc[1];
-                outFile.write(reinterpret_cast<char*>(&s), sizeof(s));
-                outFile.write(reinterpret_cast<char*>(&t), sizeof(t));
+            for (auto& t : surface.triangles)
+                outFile.write(reinterpret_cast<char*>(&t.indices), sizeof(t.indices));
+
+            for (auto& tc : surface.UV) {
+                outFile.write(reinterpret_cast<char*>(&tc.s), sizeof(tc.s));
+                outFile.write(reinterpret_cast<char*>(&tc.t), sizeof(tc.t));
             }
 
-            tempsurf.offsetVertices = (int)outFile.tellp() - offsetSurfaceStart;
-            for (const auto& vf : surface["vertexFrames"]) {
-                for (const auto& v : vf) {
-                    short vert[4] = { v[0], v[1], v[2], v[3] };
-                    outFile.write(reinterpret_cast<char*>(&vert), sizeof(vert));
+            for (auto& vf : surface.vertexFrames) {
+                for (auto& v : vf.vertices) {
+                    outFile.write(reinterpret_cast<char*>(&v.x), sizeof(v.x));
+                    outFile.write(reinterpret_cast<char*>(&v.y), sizeof(v.y));
+                    outFile.write(reinterpret_cast<char*>(&v.z), sizeof(v.z));
+                    outFile.write(reinterpret_cast<char*>(&v.lightNormalIndex), sizeof(v.lightNormalIndex));
                 }
-            }
-            tempsurf.offsetEnd = (int)outFile.tellp() - offsetSurfaceStart;
-
-            outFile.seekp(offsetSurfaceStart + 88);
-            outFile.write(reinterpret_cast<char*>(&tempsurf.offsetTriangles), sizeof(tempsurf.offsetTriangles));
-            outFile.write(reinterpret_cast<char*>(&tempsurf.offsetShaders), sizeof(tempsurf.offsetShaders));
-            outFile.write(reinterpret_cast<char*>(&tempsurf.offsetUV), sizeof(tempsurf.offsetUV));
-            outFile.write(reinterpret_cast<char*>(&tempsurf.offsetVertices), sizeof(tempsurf.offsetVertices));
-            outFile.write(reinterpret_cast<char*>(&tempsurf.offsetEnd), sizeof(tempsurf.offsetEnd));
-            outFile.seekp(offsetSurfaceStart + tempsurf.offsetEnd);
+            }            
         }
-        new_header.offsetEnd = outFile.tellp();
-
-        outFile.seekp(92);
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetFrames), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetTags), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetSurfaces), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetEnd), sizeof(int));
-
+        if (newMD3.header.offsetEnd != outFile.tellp())
+            cout << "Warning: offsetEnd doesn't match the end of the file: " << newMD3.header.offsetEnd << " vs " << outFile.tellp() << endl;
         outFile.close();
         cout << "MD3 constructed successfully: " << outpath << endl;
-
     }
     catch (exception& e) {
         cout << "JSON Parsing Error: " << e.what() << endl;
     }
 }
 
-Q3_MD3_file ParseQ3MD3(fs::path inpath) {
+
+Q3_MD3_file ReadQ3MD3(fs::path inpath) {
     ifstream inFile(inpath, ios::binary);
     Q3_MD3_file NewMD3;
 

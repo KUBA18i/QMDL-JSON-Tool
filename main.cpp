@@ -86,7 +86,7 @@ void JSONChoiceSplit(fs::path inpath) {
         cout << "Identified Quake 3 model JSON." << endl;
         fs::path outPath = inpath;
         outPath.replace_extension(".md3");
-        JSON2Q3MD3(inpath, outPath, jsoncontents);
+        WriteQ3MD3(outPath, JSON2Q3MD3(inpath, jsoncontents));
         return;
     }
 
@@ -244,7 +244,7 @@ int main(int argc, char* argv[]) {
 
         if (memcmp(ident, "IDP3", 4) == 0 && versionnum == 15) {
             cout << "Identified Quake 3 model file: " << string(ident, 4) << " and " << versionnum << endl;
-            Q3MD32JSON(ParseQ3MD3(filePath), outPath);
+            Q3MD32JSON(ReadQ3MD3(filePath), outPath);
         }
         else {
             cout << "Error: Invalid ident and version numbers: " << string(ident, 4) << " and " << versionnum << endl;

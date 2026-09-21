@@ -114,6 +114,7 @@ struct Q3_MD3_file {
     vector<q3_md3_surface_t> surfaces;
 };
 
-extern void JSON2Q3MD3(fs::path inpath, fs::path outpath, json jsonMD2);
-extern Q3_MD3_file ParseQ3MD3(fs::path inpath);
-extern void Q3MD32JSON(const Q3_MD3_file& NewMD2, fs::path outpath);
+extern Q3_MD3_file JSON2Q3MD3(fs::path inpath, json jsonMD3);
+extern void WriteQ3MD3(fs::path outpath, Q3_MD3_file newMD3);
+extern Q3_MD3_file ReadQ3MD3(fs::path inpath);
+extern void Q3MD32JSON(const Q3_MD3_file& NewMD3, fs::path outpath);

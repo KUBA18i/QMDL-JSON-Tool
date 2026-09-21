@@ -120,7 +120,7 @@ struct kp_mdx_BFrames_t
     vector<kp_mdx_BBox_t> BoxFrames;
 };
 
-struct kp_mdx_file {
+struct KP_MDX_file {
     kp_mdx_header_t header;
     vector<string> skinpaths;
     vector<kp_mdx_triangle_t> triangles;
@@ -132,6 +132,7 @@ struct kp_mdx_file {
     vector<kp_mdx_BFrames_t> BBoxFrames;
 };
 
-extern void JSON2KPMDX(fs::path inpath, fs::path outpath, json jsonMDX);
-extern kp_mdx_file ParseKPMDX(fs::path inpath);
-extern void KPMDX2JSON(const kp_mdx_file& NewMDX, fs::path outpath);
+extern KP_MDX_file JSON2KPMDX(fs::path inpath, json jsonMDX);
+extern void WriteKPMDX(fs::path outpath, KP_MDX_file newMDX);
+extern KP_MDX_file ReadKPMDX(fs::path inpath);
+extern void KPMDX2JSON(const KP_MDX_file& NewMDX, fs::path outpath);

@@ -15,119 +15,101 @@ using namespace std;
 using json = nlohmann::ordered_json;
 namespace fs = filesystem;
 
-void JSON2KPMDX(fs::path inpath, fs::path outpath, json jsonMDX) {
+KP_MDX_file JSON2KPMDX(fs::path inpath, json jsonMDX) {
     try {
-        ofstream outFile(outpath, ios::binary);
-        if (!outFile.is_open()) {
-            cout << "Error: Could not open output file." << endl;
-            return;
-        }
+        KP_MDX_file newMDX;
+        newMDX.header.magic = 1481655369;//IDPX
+        newMDX.header.version = 4;
+        newMDX.header.numSkins = jsonMDX["skins"].size();
+        newMDX.header.numTriangles = jsonMDX["triangles"].size();
+        newMDX.header.numFrames = jsonMDX["frames"].size();
+        newMDX.header.numSfxDefines = jsonMDX["SfxDefintions"].size();
+        newMDX.header.numSfxEntries = jsonMDX["SfxEntries"].size();
+        newMDX.header.numSubObjects = jsonMDX["BBoxFrames"].size();
 
-        kp_mdx_header_t new_header;
-
-        new_header.version = 4;
-        new_header.numSkins = jsonMDX["skins"].size();
-        new_header.numTriangles = jsonMDX["triangles"].size();
-        new_header.numFrames = jsonMDX["frames"].size();
-        new_header.numSfxDefines = jsonMDX["SfxDefintions"].size();
-        new_header.numSfxEntries = jsonMDX["SfxEntries"].size();
-        new_header.numSubObjects = jsonMDX["BBoxFrames"].size();
-
-        new_header.numVertices = -1;
+        newMDX.header.numVertices = -1;
         for (const auto& f : jsonMDX["frames"]) {
-            if (new_header.numVertices == -1)
-                new_header.numVertices = f["verts"].size();
-            else if (new_header.numVertices != f["verts"].size()) {
-                cout << "Error: Frame " << (f["name"]) << " has " << f["verts"].size() << " verts, but expected " << new_header.numVertices << endl;
-                return;
+            if (newMDX.header.numVertices == -1)
+                newMDX.header.numVertices = f["verts"].size();
+            else if (newMDX.header.numVertices != f["verts"].size()) {
+                cout << "Error: Frame " << (f["name"]) << " has " << f["verts"].size() << " verts, but expected " << newMDX.header.numVertices << endl;
+                exit(1);
             }
         }
 
-        new_header.numGlCommands = 0;
+        newMDX.header.numGlCommands = 0;
         for (const auto& g : jsonMDX["glCommands"]) {
-            new_header.numGlCommands += 2;
-            new_header.numGlCommands += (g["verts"].size() * 3);
+            newMDX.header.numGlCommands += 2;
+            newMDX.header.numGlCommands += (g["verts"].size() * 3);
         }
-        new_header.numGlCommands++;
+        newMDX.header.numGlCommands++;
 
-        new_header.frameSize = new_header.numVertices * 4 + 40;
+        newMDX.header.frameSize = newMDX.header.numVertices * 4 + 40;
 
         auto jheader = jsonMDX.at("header");
-        new_header.skinWidth = jheader["skinWidth"];
-        new_header.skinHeight = jheader["skinHeight"];
+        newMDX.header.skinWidth = jheader["skinWidth"];
+        newMDX.header.skinHeight = jheader["skinHeight"];
         
-        outFile.write("IDPX", 4);
-        outFile.write(reinterpret_cast<char*>(&new_header.version), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.skinWidth), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.skinHeight), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.frameSize), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.numSkins), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.numVertices), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.numTriangles), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.numGlCommands), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.numFrames), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.numSfxDefines), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.numSfxEntries), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.numSubObjects), sizeof(int));
-        for (int i = 0; i < 40; i++) outFile.write("X", 1);
+        newMDX.header.offsetSkins = 92;
+        for (const auto& s : jsonMDX["skins"])
+            newMDX.skinpaths.push_back(s);
         
-        new_header.offsetSkins = outFile.tellp();
-        for (const auto& s : jsonMDX["skins"]) {
-            char name[64] = { 0 };
-            string sName = s;
-            strncpy(name, sName.c_str(), 63);
-            outFile.write(name, 64);
+        newMDX.header.offsetTriangles = newMDX.header.offsetSkins + newMDX.header.numSkins * 64;
+        for (auto& tri : jsonMDX["triangles"]) {
+            kp_mdx_triangle_t newTri;
+            newTri.vertexIndices[0] = tri[0];
+            newTri.vertexIndices[1] = tri[1];
+            newTri.vertexIndices[2] = tri[2];
+            newTri.textureIndices[0] = tri[3];
+            newTri.textureIndices[1] = tri[4];
+            newTri.textureIndices[2] = tri[5];
+            newMDX.triangles.push_back(newTri);
         }
         
-        new_header.offsetTriangles = outFile.tellp();
-        for (const auto& tri : jsonMDX["triangles"]) {
-            short t[6] = { tri[0], tri[1], tri[2], tri[3], tri[4], tri[5] };
-            outFile.write(reinterpret_cast<char*>(t), sizeof(t));
-        }
-        
-        new_header.offsetFrames = outFile.tellp();
+        newMDX.header.offsetFrames = newMDX.header.offsetTriangles + newMDX.header.numTriangles * 12;
         for (const auto& f : jsonMDX["frames"]) {
-            float scale[3] = { f["scale"][0], f["scale"][1], f["scale"][2]};
-            float translate[3] = { f["translate"][0], f["translate"][1], f["translate"][2] };
-            char name[16] = { 0 };
+            kp_mdx_frame_t newFrame;
+            newFrame.scale[0] = f["scale"][0];
+            newFrame.scale[1] = f["scale"][1];
+            newFrame.scale[2] = f["scale"][2];
+            newFrame.translate[0] = f["translate"][0];
+            newFrame.translate[1] = f["translate"][1];
+            newFrame.translate[2] = f["translate"][2];
             string sName = f["name"];
-            strncpy(name, sName.c_str(), 15);
-
-            outFile.write(reinterpret_cast<char*>(&scale), sizeof(scale));
-            outFile.write(reinterpret_cast<char*>(&translate), sizeof(translate));
-            outFile.write(name, 16);
-
+            memset(newFrame.name, 0, sizeof(newFrame.name));
+            strncpy(newFrame.name, sName.c_str(), sizeof(newFrame.name) - 1);
             for (const auto& v : f["verts"]) {
-                uint8_t vert[4] = { v[0], v[1], v[2], v[3] };
-                outFile.write(reinterpret_cast<char*>(&vert), 4);
+                kp_mdx_triangleVertex_t newVert;
+                newVert.vertex[0] = v[0];
+                newVert.vertex[1] = v[1];
+                newVert.vertex[2] = v[2];
+                newVert.lightNormalIndex = v[3];
+                newFrame.vertices.push_back(newVert);
             }
+            newMDX.frames.push_back(newFrame);
         }
         
-        new_header.offsetGlCommands = outFile.tellp();
+        newMDX.header.offsetGlCommands = newMDX.header.offsetFrames + newMDX.header.numFrames * newMDX.header.frameSize;
         for (const auto& g : jsonMDX["glCommands"]) {
-            int vcount = g["verts"].size();
-            if (g["strip"].get<bool>() == false) vcount *= (-1);
-            outFile.write(reinterpret_cast<char*>(&vcount), sizeof(vcount));
-            int soid = g["SubObjectID"];
-            outFile.write(reinterpret_cast<char*>(&soid), sizeof(soid));
+            kp_mdx_glCommand_t newGLC;
+            newGLC.count = g["verts"].size();
+            if (g["strip"].get<bool>() == false) newGLC.count *= (-1);
+            newGLC.SubObjectID = g["SubObjectID"];
             for (const auto& v : g["verts"]) {
-                float vs = v[0];
-                float vt = v[1];
-                int vertexIndex = v[2];
-                outFile.write(reinterpret_cast<char*>(&vs), sizeof(vs));
-                outFile.write(reinterpret_cast<char*>(&vt), sizeof(vt));
-                outFile.write(reinterpret_cast<char*>(&vertexIndex), sizeof(vertexIndex));
+                kp_mdx_glCommandVertex_t newGLV;
+                newGLV.s = v[0];
+                newGLV.t = v[1];
+                newGLV.vertexIndex = v[2];
+                newGLC.vertices.push_back(newGLV);
             }
+            newMDX.GLCommands.push_back(newGLC);
         }
-        outFile.write("\0\0\0\0", 4);
+
+        newMDX.header.offsetVertexInfo = newMDX.header.offsetGlCommands + newMDX.header.numGlCommands * 4;
+        for (const auto& vi : jsonMDX["VertexInfo"])
+            newMDX.VertexInfo.push_back(vi);
         
-        new_header.offsetVertexInfo = outFile.tellp();
-        for (const auto& vi : jsonMDX["VertexInfo"]) {
-            int v = vi;
-            outFile.write(reinterpret_cast<char*>(&v), sizeof(v));
-        }
-        
-        new_header.offsetSfxDefines = outFile.tellp();
+        newMDX.header.offsetSfxDefines = newMDX.header.offsetVertexInfo + newMDX.header.numVertices * 4;
         for (const auto& sd : jsonMDX["SfxDefintions"]) {
             kp_mdx_sfxDefine_t newSD;
             newSD.type = sd["type"];
@@ -147,7 +129,110 @@ void JSON2KPMDX(fs::path inpath, fs::path outpath, json jsonMDX) {
             newSD.start_height = sd["start_height"];
             newSD.end_height = sd["end_height"];
             newSD.random_size_scale = sd["random_size_scale"];
-            
+            newMDX.SfxDefintions.push_back(newSD);
+        }
+        
+        newMDX.header.offsetSfxEntries = newMDX.header.offsetSfxDefines + newMDX.header.numSfxDefines * sizeof(kp_mdx_sfxDefine_t);
+        for (const auto& se : jsonMDX["SfxEntries"]) {
+            kp_mdx_sfxEntry_t newSE;
+            newSE.index = se["index"];
+            newSE.define_no = se["define_no"];
+            newSE.vertexindex = se["vertexindex"];
+            for (int i = 0; i < 128; i++)
+                newSE.SfxFrames[i] = se["SfxFrames"][i];
+            newMDX.SfxEntries.push_back(newSE);
+        }
+
+        newMDX.header.offsetBBoxFrames = newMDX.header.offsetSfxEntries + newMDX.header.numSfxEntries * sizeof(kp_mdx_sfxEntry_t);
+        for (const auto& bf : jsonMDX["BBoxFrames"]) {
+            kp_mdx_BFrames_t newBF;
+            for (const auto& bbox : bf) {
+                kp_mdx_BBox_t newbox;
+                newbox.MinX = bbox[0];
+                newbox.MinY = bbox[1];
+                newbox.MinZ = bbox[2];
+                newbox.MaxX = bbox[3];
+                newbox.MaxY = bbox[4];
+                newbox.MaxZ = bbox[5];
+                newBF.BoxFrames.push_back(newbox);
+            }
+            newMDX.BBoxFrames.push_back(newBF);
+        }
+        
+        newMDX.header.offsetDummyEnd = newMDX.header.offsetBBoxFrames + newMDX.header.numSubObjects * newMDX.header.numFrames * 24;
+        newMDX.header.offsetEnd = newMDX.header.offsetDummyEnd;
+        cout << "JSON parsed, creating MDX..." << endl;
+        return newMDX;
+    }
+    catch (exception& e) {
+        cout << "JSON Parsing Error: " << e.what() << endl;
+    }
+}
+
+void WriteKPMDX(fs::path outpath, KP_MDX_file newMDX) {
+    try {
+        ofstream outFile(outpath, ios::binary);
+        if (!outFile.is_open()) {
+            cout << "Error: Could not open output file." << endl;
+            return;
+        }
+
+        outFile.write("IDPX", 4);
+        outFile.write(reinterpret_cast<char*>(&newMDX.header.version), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMDX.header.skinWidth), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMDX.header.skinHeight), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMDX.header.frameSize), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMDX.header.numSkins), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMDX.header.numVertices), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMDX.header.numTriangles), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMDX.header.numGlCommands), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMDX.header.numFrames), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMDX.header.numSfxDefines), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMDX.header.numSfxEntries), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMDX.header.numSubObjects), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMDX.header.offsetSkins), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMDX.header.offsetTriangles), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMDX.header.offsetFrames), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMDX.header.offsetGlCommands), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMDX.header.offsetVertexInfo), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMDX.header.offsetSfxDefines), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMDX.header.offsetSfxEntries), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMDX.header.offsetBBoxFrames), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMDX.header.offsetDummyEnd), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newMDX.header.offsetEnd), sizeof(int));
+
+        for (const auto& s : newMDX.skinpaths) {
+            char name[64] = { 0 };
+            strncpy(name, s.c_str(), 63);
+            outFile.write(name, 64);
+        }
+
+        for (auto& tri : newMDX.triangles)
+            outFile.write(reinterpret_cast<char*>(&tri), sizeof(tri));
+
+        for (auto& f : newMDX.frames) {
+            outFile.write(reinterpret_cast<char*>(&f.scale), sizeof(f.scale));
+            outFile.write(reinterpret_cast<char*>(&f.translate), sizeof(f.translate));
+            outFile.write(f.name, 16);
+            for (auto& v : f.vertices)
+                outFile.write(reinterpret_cast<char*>(&v), sizeof(v));
+        }
+
+        for (auto& g : newMDX.GLCommands) {
+            outFile.write(reinterpret_cast<char*>(&g.count), sizeof(g.count));
+            outFile.write(reinterpret_cast<char*>(&g.SubObjectID), sizeof(g.SubObjectID));
+            for (auto& v : g.vertices) {
+                outFile.write(reinterpret_cast<char*>(&v.s), sizeof(v.s));
+                outFile.write(reinterpret_cast<char*>(&v.t), sizeof(v.t));
+                outFile.write(reinterpret_cast<char*>(&v.vertexIndex), sizeof(v.vertexIndex));
+            }
+        }
+        outFile.write("\0\0\0\0", 4);
+
+        for (auto& vi : newMDX.VertexInfo)
+            outFile.write(reinterpret_cast<char*>(&vi), sizeof(vi));
+
+        for (auto& newSD : newMDX.SfxDefintions) {
             outFile.write(reinterpret_cast<char*>(&newSD.type), sizeof(newSD.type));
             outFile.write(reinterpret_cast<char*>(&newSD.flags), sizeof(newSD.flags));
             outFile.write(reinterpret_cast<char*>(&newSD.velocity_type), sizeof(newSD.velocity_type));
@@ -166,32 +251,17 @@ void JSON2KPMDX(fs::path inpath, fs::path outpath, json jsonMDX) {
             outFile.write(reinterpret_cast<char*>(&newSD.end_height), sizeof(newSD.end_height));
             outFile.write(reinterpret_cast<char*>(&newSD.random_size_scale), sizeof(newSD.random_size_scale));
         }
-        
-        new_header.offsetSfxEntries = outFile.tellp();
-        for (const auto& se : jsonMDX["SfxEntries"]) {
-            kp_mdx_sfxEntry_t newSE;
-            newSE.index = se["index"];
-            newSE.define_no = se["define_no"];
-            newSE.vertexindex = se["vertexindex"];
+
+        for (auto& newSE : newMDX.SfxEntries) {
             outFile.write(reinterpret_cast<char*>(&newSE.index), sizeof(newSE.index));
             outFile.write(reinterpret_cast<char*>(&newSE.define_no), sizeof(newSE.define_no));
             outFile.write(reinterpret_cast<char*>(&newSE.vertexindex), sizeof(newSE.vertexindex));
-            for (const auto& f : se["SfxFrames"]) {
-                uint8_t vert = f;
-                outFile.write(reinterpret_cast<char*>(&vert), 1);
-            }
+            for (auto& f : newSE.SfxFrames)
+                outFile.write(reinterpret_cast<char*>(&f), 1);
         }
 
-        new_header.offsetBBoxFrames = outFile.tellp();
-        for (const auto& bf : jsonMDX["BBoxFrames"]) {
-            for (const auto& bbox : bf) {
-                kp_mdx_BBox_t newbox;
-                newbox.MinX = bbox[0];
-                newbox.MinY = bbox[1];
-                newbox.MinZ = bbox[2];
-                newbox.MaxX = bbox[3];
-                newbox.MaxY = bbox[4];
-                newbox.MaxZ = bbox[5];
+        for (auto& bf : newMDX.BBoxFrames) {
+            for (auto& newbox : bf.BoxFrames) {
                 outFile.write(reinterpret_cast<char*>(&newbox.MinX), sizeof(newbox.MinX));
                 outFile.write(reinterpret_cast<char*>(&newbox.MinY), sizeof(newbox.MinY));
                 outFile.write(reinterpret_cast<char*>(&newbox.MinZ), sizeof(newbox.MinZ));
@@ -200,34 +270,19 @@ void JSON2KPMDX(fs::path inpath, fs::path outpath, json jsonMDX) {
                 outFile.write(reinterpret_cast<char*>(&newbox.MaxZ), sizeof(newbox.MaxZ));
             }
         }
-        
-        new_header.offsetDummyEnd = outFile.tellp();
-        new_header.offsetEnd = outFile.tellp();
-
-        outFile.seekp(52);
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetSkins), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetTriangles), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetFrames), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetGlCommands), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetVertexInfo), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetSfxDefines), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetSfxEntries), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetBBoxFrames), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetDummyEnd), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetEnd), sizeof(int));
-
+        if (newMDX.header.offsetEnd != outFile.tellp())
+            cout << "Warning: offsetEnd doesn't match the end of the file: " << newMDX.header.offsetEnd << " vs " << outFile.tellp() << endl;
         outFile.close();
         cout << "MDX constructed successfully: " << outpath << endl;
-
     }
     catch (exception& e) {
-        cout << "JSON Parsing Error: " << e.what() << endl;
+        cout << "Error: " << e.what() << endl;
     }
 }
 
-kp_mdx_file ParseKPMDX(fs::path inpath) {
+KP_MDX_file ReadKPMDX(fs::path inpath) {
     ifstream inFile(inpath, ios::binary);
-    kp_mdx_file NewMDX;
+    KP_MDX_file NewMDX;
 
     inFile.read(reinterpret_cast<char*>(&NewMDX.header.magic), sizeof(NewMDX.header.magic));
     inFile.read(reinterpret_cast<char*>(&NewMDX.header.version), sizeof(NewMDX.header.version));
@@ -409,7 +464,7 @@ kp_mdx_file ParseKPMDX(fs::path inpath) {
     return NewMDX;
 }
 
-void KPMDX2JSON(const kp_mdx_file& NewMDX, fs::path outpath) {
+void KPMDX2JSON(const KP_MDX_file& NewMDX, fs::path outpath) {
     json jsonMDX;
     json jheader;
     jheader["ident"] = "IDPX";

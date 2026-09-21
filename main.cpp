@@ -72,7 +72,7 @@ void JSONChoiceSplit(fs::path inpath) {
         cout << "Identified Kingpin model JSON." << endl;
         fs::path outPath = inpath;
         outPath.replace_extension(".mdx");
-        JSON2KPMDX(inpath, outPath, jsoncontents);
+        WriteKPMDX(outPath, JSON2KPMDX(inpath, jsoncontents));
         return;
     }
     if (jheader.at("ident").get<string>() == "DKMD" && jheader.at("version").get<int>() > 0 && jheader.at("version").get<int>() < 3) {
@@ -192,7 +192,7 @@ int main(int argc, char* argv[]) {
 
         if (memcmp(ident, "IDPX", 4) == 0 && versionnum == 4) {
             cout << "Identified Kingpin model file: " << string(ident, 4) << " and " << versionnum << endl;
-            KPMDX2JSON(ParseKPMDX(filePath), outPath);
+            KPMDX2JSON(ReadKPMDX(filePath), outPath);
         }
         else {
             cout << "Error: Invalid ident and version numbers: " << string(ident, 4) << " and " << versionnum << endl;

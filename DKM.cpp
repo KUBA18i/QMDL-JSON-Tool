@@ -15,7 +15,156 @@ using namespace std;
 using json = nlohmann::ordered_json;
 namespace fs = filesystem;
 
-void JSON2DKM(fs::path inpath, fs::path outpath, json jsonDKM) {
+DKM_file JSON2DKM(fs::path inpath, json jsonDKM) {
+    try {
+        
+        DKM_file newDKM;
+        newDKM.header.ident = 1145916228;//DKMD
+        auto jheader = jsonDKM.at("header");
+        newDKM.header.version = jheader["version"];
+        newDKM.header.origin[0] = jheader["origin"][0];
+        newDKM.header.origin[1] = jheader["origin"][1];
+        newDKM.header.origin[2] = jheader["origin"][2];
+        
+        newDKM.header.numSkins = jsonDKM["skins"].size();
+        newDKM.header.numTexCoords = jsonDKM["UV"].size();
+        newDKM.header.numTriangles = jsonDKM["triangles"].size();
+        newDKM.header.numFrames = jsonDKM["frames"].size();
+        newDKM.header.numSurfaces = jsonDKM["surfaces"].size();
+        newDKM.header.numSequences = jsonDKM["animSeqs"].size();
+
+        newDKM.header.numVertices = -1;
+        for (const auto& f : jsonDKM["frames"]) {
+            if (newDKM.header.numVertices == -1)
+                newDKM.header.numVertices = f["verts"].size();
+            else if (newDKM.header.numVertices != f["verts"].size()) {
+                cout << "Error: Frame " << (f["name"]) << " has " << f["verts"].size() << " verts, but expected " << newDKM.header.numVertices << endl;
+                exit(1);
+            }
+        }
+
+        newDKM.header.numGlCommands = 0;
+        for (const auto& g : jsonDKM["glCommands"]) {
+            newDKM.header.numGlCommands += 3;
+            newDKM.header.numGlCommands += (g["verts"].size() * 3);
+        }
+        newDKM.header.numGlCommands++;
+
+        if (newDKM.header.version == 1) {
+            newDKM.header.frameSize = newDKM.header.numVertices * 4 + 40;
+        }
+        else if (newDKM.header.version == 2) {
+            newDKM.header.frameSize = newDKM.header.numVertices * 5 + 43;
+        }
+        
+        if (newDKM.header.numSequences > 0)
+            newDKM.header.offsetSkins = 88;
+        else
+            newDKM.header.offsetSkins = 80;
+        
+        for (const auto& s : jsonDKM["skins"])
+            newDKM.skinpaths.push_back(s);
+
+        newDKM.header.offsetTexCoords = newDKM.header.offsetSkins + newDKM.header.numSkins * 64;
+        for (const auto& uv : jsonDKM["UV"]) {
+            dkm_textureCoordinate_t newTC;
+            newTC.s = uv[0];
+            newTC.t = uv[1];
+            newDKM.UV.push_back(newTC);
+        }
+        
+        newDKM.header.offsetTriangles = newDKM.header.offsetTexCoords + newDKM.header.numTexCoords * 4;
+        for (const auto& tri : jsonDKM["triangles"]) {
+            dkm_triangle_t newTri;
+            newTri.surfaceIndex = tri["surfaceIndex"];
+            newTri.num_uvframes = tri["num_uvframes"];
+            newTri.vertexIndices[0] = tri["vertexIndices"][0];
+            newTri.vertexIndices[1] = tri["vertexIndices"][1];
+            newTri.vertexIndices[2] = tri["vertexIndices"][2];
+            newTri.textureIndices[0] = tri["textureIndices"][0];
+            newTri.textureIndices[1] = tri["textureIndices"][1];
+            newTri.textureIndices[2] = tri["textureIndices"][2];
+            newDKM.triangles.push_back(newTri);
+        }
+        
+        newDKM.header.offsetFrames = newDKM.header.offsetTriangles + newDKM.header.numTriangles * 16;
+        for (const auto& f : jsonDKM["frames"]) {
+            dkm_frame_t newFrame;
+            newFrame.scale[0] = f["scale"][0];
+            newFrame.scale[1] = f["scale"][1];
+            newFrame.scale[2] = f["scale"][2];
+            newFrame.translate[0] = f["translate"][0];
+            newFrame.translate[1] = f["translate"][1];
+            newFrame.translate[2] = f["translate"][2];
+            newFrame.name = f["name"];
+            for (const auto& v : f["verts"]) {
+                dkm_triangleVertex_t newVert;
+                newVert.vertex[0] = v[0];
+                newVert.vertex[1] = v[1];
+                newVert.vertex[2] = v[2];
+                newVert.lightNormalIndex = v[3];
+                newFrame.vertices.push_back(newVert);
+            }
+            if (newDKM.header.version == 2) {
+                newFrame.unknown[0] = f["unknown"][0];
+                newFrame.unknown[1] = f["unknown"][1];
+                newFrame.unknown[2] = f["unknown"][2];
+            }
+            newDKM.frames.push_back(newFrame);
+        }
+        
+        newDKM.header.offsetGlCommands = newDKM.header.offsetFrames + newDKM.header.numFrames * newDKM.header.frameSize;
+        for (const auto& g : jsonDKM["glCommands"]) {
+            dkm_glCommand_t newGLC;
+            newGLC.count = g["verts"].size();
+            if (g["strip"].get<bool>() == false) newGLC.count *= (-1);
+            newGLC.skinIndex = g["skinIndex"];
+            newGLC.surfIndex = g["surfIndex"];
+            for (const auto& v : g["verts"]) {
+                dkm_glCommandVertex_t newGLV;
+                newGLV.vertexIndex = v[0];
+                newGLV.s = v[1];
+                newGLV.t = v[2];
+                newGLC.vertices.push_back(newGLV);
+            }
+            newDKM.GLCommands.push_back(newGLC);
+        }
+
+        newDKM.header.offsetSurfaces = newDKM.header.offsetGlCommands + newDKM.header.numGlCommands * 4;
+        for (const auto& s : jsonDKM["surfaces"]) {
+            dkm_surface_t newSurf;
+            newSurf.name = s["name"];
+            newSurf.flags = s["flags"];
+            newSurf.skinIndex = s["skinIndex"];
+            newSurf.skinWidth = s["skinWidth"];
+            newSurf.skinHeight = s["skinHeight"];
+            newSurf.numUVframes = s["numUVframes"];
+            newDKM.surfaces.push_back(newSurf);
+        }
+        
+        if (newDKM.header.numSequences > 0) {
+            newDKM.header.offsetSequences = newDKM.header.offsetSurfaces + newDKM.header.numSurfaces * 52;
+            for (const auto& as : jsonDKM["animSeqs"]) {
+                dkm_animSeq_t newAS;
+                newAS.name = as["name"];
+                newAS.startFrame = as["startFrame"];
+                newAS.endFrame = as["endFrame"];
+                newDKM.sequences.push_back(newAS);
+            }
+            newDKM.header.offsetEnd = newDKM.header.offsetSequences + newDKM.header.numSequences * 24;
+        }
+        else
+            newDKM.header.offsetEnd = newDKM.header.offsetSurfaces + newDKM.header.numSurfaces * 52;
+        
+        cout << "JSON parsed, creating DKM..." << endl;
+        return newDKM;
+    }
+    catch (exception& e) {
+        cout << "JSON Parsing Error: " << e.what() << endl;
+    }
+}
+
+void WriteDKM(fs::path outpath, DKM_file newDKM) {
     try {
         ofstream outFile(outpath, ios::binary);
         if (!outFile.is_open()) {
@@ -23,210 +172,130 @@ void JSON2DKM(fs::path inpath, fs::path outpath, json jsonDKM) {
             return;
         }
 
-        dkm_header_t new_header;
-
-        auto jheader = jsonDKM.at("header");
-        new_header.version = jheader["version"];
-        new_header.origin[0] = jheader["origin"][0];
-        new_header.origin[1] = jheader["origin"][1];
-        new_header.origin[2] = jheader["origin"][2];
-        
-        new_header.numSkins = jsonDKM["skins"].size();
-        new_header.numTexCoords = jsonDKM["UV"].size();
-        new_header.numTriangles = jsonDKM["triangles"].size();
-        new_header.numFrames = jsonDKM["frames"].size();
-        new_header.numSurfaces = jsonDKM["surfaces"].size();
-        new_header.numSequences = jsonDKM["animSeqs"].size();
-
-        new_header.numVertices = -1;
-        for (const auto& f : jsonDKM["frames"]) {
-            if (new_header.numVertices == -1)
-                new_header.numVertices = f["verts"].size();
-            else if (new_header.numVertices != f["verts"].size()) {
-                cout << "Error: Frame " << (f["name"]) << " has " << f["verts"].size() << " verts, but expected " << new_header.numVertices << endl;
-                return;
-            }
-        }
-
-        new_header.numGlCommands = 0;
-        for (const auto& g : jsonDKM["glCommands"]) {
-            new_header.numGlCommands += 3;
-            new_header.numGlCommands += (g["verts"].size() * 3);
-        }
-        new_header.numGlCommands++;
-
-        if (new_header.version == 1) {
-            new_header.frameSize = new_header.numVertices * 4 + 40;
-        }
-        else if (new_header.version == 2) {
-            new_header.frameSize = new_header.numVertices * 5 + 43;
-        }
-        
         outFile.write("DKMD", 4);
-        outFile.write(reinterpret_cast<char*>(&new_header.version), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.origin[0]), sizeof(new_header.origin[0]));
-        outFile.write(reinterpret_cast<char*>(&new_header.origin[1]), sizeof(new_header.origin[1]));
-        outFile.write(reinterpret_cast<char*>(&new_header.origin[2]), sizeof(new_header.origin[2]));
-        outFile.write(reinterpret_cast<char*>(&new_header.frameSize), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.numSkins), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.numVertices), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.numTexCoords), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.numTriangles), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.numGlCommands), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.numFrames), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.numSurfaces), sizeof(int));
-        for (int i = 0; i < 28; i++) outFile.write("X", 1);
-        
-        if (new_header.numSequences > 0) {
-            outFile.write(reinterpret_cast<char*>(&new_header.numSequences), sizeof(int));
-            for (int i = 0; i < 4; i++) outFile.write("X", 1);
+        outFile.write(reinterpret_cast<char*>(&newDKM.header.version), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newDKM.header.origin[0]), sizeof(newDKM.header.origin[0]));
+        outFile.write(reinterpret_cast<char*>(&newDKM.header.origin[1]), sizeof(newDKM.header.origin[1]));
+        outFile.write(reinterpret_cast<char*>(&newDKM.header.origin[2]), sizeof(newDKM.header.origin[2]));
+        outFile.write(reinterpret_cast<char*>(&newDKM.header.frameSize), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newDKM.header.numSkins), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newDKM.header.numVertices), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newDKM.header.numTexCoords), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newDKM.header.numTriangles), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newDKM.header.numGlCommands), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newDKM.header.numFrames), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newDKM.header.numSurfaces), sizeof(int));
+
+        outFile.write(reinterpret_cast<char*>(&newDKM.header.offsetSkins), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newDKM.header.offsetTexCoords), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newDKM.header.offsetTriangles), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newDKM.header.offsetFrames), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newDKM.header.offsetGlCommands), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newDKM.header.offsetSurfaces), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newDKM.header.offsetEnd), sizeof(int));
+
+        if (newDKM.header.numSequences > 0) {
+            outFile.write(reinterpret_cast<char*>(&newDKM.header.numSequences), sizeof(int));
+            outFile.write(reinterpret_cast<char*>(&newDKM.header.offsetSequences), sizeof(int));
             cout << "Animation sequence data block is present." << endl;
         }
         else
             cout << "Animation sequence data block is absent." << endl;
-        
-        new_header.offsetSkins = outFile.tellp();
-        for (const auto& s : jsonDKM["skins"]) {
+
+        for (const auto& s : newDKM.skinpaths) {
             char name[64] = { 0 };
-            string sName = s;
-            strncpy(name, sName.c_str(), 63);
+            strncpy(name, s.c_str(), 63);
             outFile.write(name, 64);
         }
-        
-        new_header.offsetTexCoords = outFile.tellp();
-        for (const auto& uv : jsonDKM["UV"]) {
-            short s = uv[0];
-            short t = uv[1];
-            outFile.write(reinterpret_cast<char*>(&s), sizeof(s));
-            outFile.write(reinterpret_cast<char*>(&t), sizeof(t));
-        }
-        
-        new_header.offsetTriangles = outFile.tellp();
-        for (const auto& tri : jsonDKM["triangles"]) {
-            short surfaceIndex = tri["surfaceIndex"];
-            short num_uvframes = tri["num_uvframes"];
-            short vertexIndices[3] = { tri["vertexIndices"][0], tri["vertexIndices"][1], tri["vertexIndices"][2] };
-            short textureIndices[3] = { tri["textureIndices"][0], tri["textureIndices"][1], tri["textureIndices"][2] };
-            outFile.write(reinterpret_cast<char*>(&surfaceIndex), sizeof(surfaceIndex));
-            outFile.write(reinterpret_cast<char*>(&num_uvframes), sizeof(num_uvframes));
-            outFile.write(reinterpret_cast<char*>(&vertexIndices), sizeof(vertexIndices));
-            outFile.write(reinterpret_cast<char*>(&textureIndices), sizeof(textureIndices));
-        }
-        
-        new_header.offsetFrames = outFile.tellp();
-        for (const auto& f : jsonDKM["frames"]) {
-            float scale[3] = { f["scale"][0], f["scale"][1], f["scale"][2]};
-            float translate[3] = { f["translate"][0], f["translate"][1], f["translate"][2] };
-            char name[16] = { 0 };
-            string sName = f["name"];
-            strncpy(name, sName.c_str(), 15);
 
-            outFile.write(reinterpret_cast<char*>(&scale), sizeof(scale));
-            outFile.write(reinterpret_cast<char*>(&translate), sizeof(translate));
+        for (auto& uv : newDKM.UV) {
+            outFile.write(reinterpret_cast<char*>(&uv.s), sizeof(uv.s));
+            outFile.write(reinterpret_cast<char*>(&uv.t), sizeof(uv.t));
+        }
+
+        for (auto& tri : newDKM.triangles) {
+            outFile.write(reinterpret_cast<char*>(&tri.surfaceIndex), sizeof(tri.surfaceIndex));
+            outFile.write(reinterpret_cast<char*>(&tri.num_uvframes), sizeof(tri.num_uvframes));
+            outFile.write(reinterpret_cast<char*>(&tri.vertexIndices), sizeof(tri.vertexIndices));
+            outFile.write(reinterpret_cast<char*>(&tri.textureIndices), sizeof(tri.textureIndices));
+        }
+
+        for (auto& f : newDKM.frames) {
+            char name[16] = { 0 };
+            strncpy(name, f.name.c_str(), 15);
+            outFile.write(reinterpret_cast<char*>(&f.scale), sizeof(f.scale));
+            outFile.write(reinterpret_cast<char*>(&f.translate), sizeof(f.translate));
             outFile.write(name, 16);
 
-            for (const auto& v : f["verts"]) {
-                if (new_header.version == 1) {
-                    uint8_t x = v[0];
-                    uint8_t y = v[1];
-                    uint8_t z = v[2];
+            for (const auto& v : f.vertices) {
+                if (newDKM.header.version == 1) {
+                    uint8_t x = static_cast<uint8_t>(v.vertex[0]);
+                    uint8_t y = static_cast<uint8_t>(v.vertex[1]);
+                    uint8_t z = static_cast<uint8_t>(v.vertex[2]);
                     outFile.write(reinterpret_cast<char*>(&x), sizeof(x));
                     outFile.write(reinterpret_cast<char*>(&y), sizeof(y));
                     outFile.write(reinterpret_cast<char*>(&z), sizeof(z));
                 }
-                else if (new_header.version == 2) {
-                    uint32_t x = static_cast<uint32_t>(v[0]);
-                    uint32_t y = static_cast<uint32_t>(v[1]);
-                    uint32_t z = static_cast<uint32_t>(v[2]);
+                else if (newDKM.header.version == 2) {
+                    uint32_t x = static_cast<uint32_t>(v.vertex[0]);
+                    uint32_t y = static_cast<uint32_t>(v.vertex[1]);
+                    uint32_t z = static_cast<uint32_t>(v.vertex[2]);
                     uint32_t packvert = ((x & 0x7FF) << 21) | ((y & 0x3FF) << 11) | ((z & 0x7FF));
                     outFile.write(reinterpret_cast<char*>(&packvert), sizeof(packvert));
                 }
-                uint8_t lightNormalIndex = v[3];
+                uint8_t lightNormalIndex = v.lightNormalIndex;
                 outFile.write(reinterpret_cast<char*>(&lightNormalIndex), sizeof(lightNormalIndex));
             }
-            if (new_header.version == 2) {
-                uint8_t unknown[3] = { f["unknown"][0], f["unknown"][1], f["unknown"][2] };
-                outFile.write(reinterpret_cast<char*>(&unknown), sizeof(unknown));
-            }
+            if (newDKM.header.version == 2)
+                outFile.write(reinterpret_cast<char*>(&f.unknown), sizeof(f.unknown));
         }
-        
-        new_header.offsetGlCommands = outFile.tellp();
-        for (const auto& g : jsonDKM["glCommands"]) {
-            int vcount = g["verts"].size();
-            if (g["strip"].get<bool>() == false) vcount *= (-1);
-            outFile.write(reinterpret_cast<char*>(&vcount), sizeof(vcount));
-            int skinIndex = g["skinIndex"];
-            outFile.write(reinterpret_cast<char*>(&skinIndex), sizeof(skinIndex));
-            int surfIndex = g["surfIndex"];
-            outFile.write(reinterpret_cast<char*>(&surfIndex), sizeof(surfIndex));
-            for (const auto& v : g["verts"]) {
-                int vertexIndex = v[0];
-                float vs = v[1];
-                float vt = v[2];
-                outFile.write(reinterpret_cast<char*>(&vertexIndex), sizeof(vertexIndex));
-                outFile.write(reinterpret_cast<char*>(&vs), sizeof(vs));
-                outFile.write(reinterpret_cast<char*>(&vt), sizeof(vt));
+
+        for (auto& g : newDKM.GLCommands) {
+            outFile.write(reinterpret_cast<char*>(&g.count), sizeof(g.count));
+            outFile.write(reinterpret_cast<char*>(&g.skinIndex), sizeof(g.skinIndex));
+            outFile.write(reinterpret_cast<char*>(&g.surfIndex), sizeof(g.surfIndex));
+            for (auto& v : g.vertices) {
+                outFile.write(reinterpret_cast<char*>(&v.vertexIndex), sizeof(v.vertexIndex));
+                outFile.write(reinterpret_cast<char*>(&v.s), sizeof(v.s));
+                outFile.write(reinterpret_cast<char*>(&v.t), sizeof(v.t));
             }
         }
         outFile.write("\0\0\0\0", 4);
 
-        new_header.offsetSurfaces = outFile.tellp();
-        for (const auto& s : jsonDKM["surfaces"]) {
+        for (auto& s : newDKM.surfaces) {
             char name[32] = { 0 };
-            string sName = s["name"];
-            strncpy(name, sName.c_str(), 31);
-            int flags = s["flags"];
-            int skinIndex = s["skinIndex"];
-            int skinWidth = s["skinWidth"];
-            int skinHeight = s["skinHeight"];
-            int numUVframes = s["numUVframes"];
+            strncpy(name, s.name.c_str(), 31);
             outFile.write(name, 32);
-            outFile.write(reinterpret_cast<char*>(&flags), sizeof(flags));
-            outFile.write(reinterpret_cast<char*>(&skinIndex), sizeof(skinIndex));
-            outFile.write(reinterpret_cast<char*>(&skinWidth), sizeof(skinWidth));
-            outFile.write(reinterpret_cast<char*>(&skinHeight), sizeof(skinHeight));
-            outFile.write(reinterpret_cast<char*>(&numUVframes), sizeof(numUVframes));
+            outFile.write(reinterpret_cast<char*>(&s.flags), sizeof(s.flags));
+            outFile.write(reinterpret_cast<char*>(&s.skinIndex), sizeof(s.skinIndex));
+            outFile.write(reinterpret_cast<char*>(&s.skinWidth), sizeof(s.skinWidth));
+            outFile.write(reinterpret_cast<char*>(&s.skinHeight), sizeof(s.skinHeight));
+            outFile.write(reinterpret_cast<char*>(&s.numUVframes), sizeof(s.numUVframes));
         }
-        
-        if (new_header.numSequences > 0) {
-            new_header.offsetSequences = outFile.tellp();
-            for (const auto& as : jsonDKM["animSeqs"]) {
+
+        if (newDKM.header.numSequences > 0) {
+            for (auto& as : newDKM.sequences) {
                 char name[16] = { 0 };
-                string sName = as["name"];
-                strncpy(name, sName.c_str(), 15);
-                int startFrame = as["startFrame"];
-                int endFrame = as["endFrame"];
+                strncpy(name, as.name.c_str(), 15);
                 outFile.write(name, 16);
-                outFile.write(reinterpret_cast<char*>(&startFrame), sizeof(startFrame));
-                outFile.write(reinterpret_cast<char*>(&endFrame), sizeof(endFrame));
+                outFile.write(reinterpret_cast<char*>(&as.startFrame), sizeof(as.startFrame));
+                outFile.write(reinterpret_cast<char*>(&as.endFrame), sizeof(as.endFrame));
             }
         }
-        
-        new_header.offsetEnd = outFile.tellp();
 
-        outFile.seekp(52);
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetSkins), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetTexCoords), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetTriangles), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetFrames), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetGlCommands), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetSurfaces), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.offsetEnd), sizeof(int));
-        if (new_header.numSequences > 0) {
-            outFile.write(reinterpret_cast<char*>(&new_header.numSequences), sizeof(int));
-            outFile.write(reinterpret_cast<char*>(&new_header.offsetSequences), sizeof(int));
-        }
+        if (newDKM.header.offsetEnd != outFile.tellp())
+            cout << "Warning: offsetEnd doesn't match the end of the file: " << newDKM.header.offsetEnd << " vs " << outFile.tellp() << endl;
 
         outFile.close();
         cout << "DKM constructed successfully: " << outpath << endl;
 
     }
     catch (exception& e) {
-        cout << "JSON Parsing Error: " << e.what() << endl;
+        cout << "Error: " << e.what() << endl;
     }
 }
 
-DKM_file ParseDKM(fs::path inpath) {
+DKM_file ReadDKM(fs::path inpath) {
     ifstream inFile(inpath, ios::binary);
     DKM_file NewDKM;
 

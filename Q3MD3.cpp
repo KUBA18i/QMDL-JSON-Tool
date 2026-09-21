@@ -250,7 +250,7 @@ void WriteQ3MD3(fs::path outpath, Q3_MD3_file newMD3) {
         cout << "MD3 constructed successfully: " << outpath << endl;
     }
     catch (exception& e) {
-        cout << "JSON Parsing Error: " << e.what() << endl;
+        cout << "Error: " << e.what() << endl;
     }
 }
 

@@ -183,7 +183,7 @@ void WriteQ2MD2(fs::path outpath, Q2_MD2_file newMD2) {
         cout << "MD2 constructed successfully: " << outpath << endl;
     }
     catch (exception& e) {
-        cout << "JSON Parsing Error: " << e.what() << endl;
+        cout << "Error: " << e.what() << endl;
     }
 }
 

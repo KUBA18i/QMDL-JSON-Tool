@@ -79,7 +79,7 @@ void JSONChoiceSplit(fs::path inpath) {
         cout << "Identified Daikatana model file: " << jheader.at("ident").get<string>() << ", version " << jheader.at("version").get<int>() << endl;
         fs::path outPath = inpath;
         outPath.replace_extension(".dkm");
-        JSON2DKM(inpath, outPath, jsoncontents);
+        WriteDKM(outPath, JSON2DKM(inpath, jsoncontents));
         return;
     }
     if (jheader.at("ident").get<string>() == "IDP3" && jheader.at("version").get<int>() == 15) {
@@ -218,7 +218,7 @@ int main(int argc, char* argv[]) {
 
         if (memcmp(ident, "DKMD", 4) == 0 && versionnum > 0 && versionnum < 3) {
             cout << "Identified Daikatana model file: " << string(ident, 4) << ", version " << versionnum << endl;
-            DKM2JSON(ParseDKM(filePath), outPath);
+            DKM2JSON(ReadDKM(filePath), outPath);
         }
         else {
             cout << "Error: Invalid ident and version numbers: " << string(ident, 4) << " and " << versionnum << endl;

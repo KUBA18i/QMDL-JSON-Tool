@@ -108,6 +108,7 @@ struct DKM_file {
     vector<dkm_animSeq_t> sequences;
 };
 
-extern void JSON2DKM(fs::path inpath, fs::path outpath, json jsonDKM);
-extern DKM_file ParseDKM(fs::path inpath);
+extern DKM_file JSON2DKM(fs::path inpath, json jsonDKM);
+extern void WriteDKM(fs::path outpath, DKM_file newDKM);
+extern DKM_file ReadDKM(fs::path inpath);
 extern void DKM2JSON(const DKM_file& NewDKM, fs::path outpath);

@@ -165,6 +165,7 @@ H2PoP_MDL_file JSON2H2PoPMDL(fs::path inpath, json jsonMDL) {
     }
     catch (exception& e) {
         cout << "JSON Parsing Error: " << e.what() << endl;
+        exit(1);
     }
 }
 

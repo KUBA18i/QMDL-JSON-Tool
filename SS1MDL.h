@@ -180,6 +180,7 @@ struct SS1_MDL_file {
     uint32_t colorBump;
 };
 
-extern void JSON2SS1MDL(const fs::path& inpath, const fs::path& outpath, const json& jsonMDL);
-extern SS1_MDL_file ParseSS1MDL(const fs::path& filePath);
+extern SS1_MDL_file JSON2SS1MDL(const fs::path& inpath, json& jsonMDL);
+extern void WriteSS1MDL(const fs::path& outpath, SS1_MDL_file newMDL);
+extern SS1_MDL_file ReadSS1MDL(const fs::path& filePath);
 extern void SS1MDL2JSON(const SS1_MDL_file& MDL, const fs::path& outPath);

@@ -7099,7 +7099,7 @@
     ]
   },
   "CollisionBoxes": {
-    "collideAsCube": false,
+    "collideAsCube": null,
     "Entries": [
       {
         "min": [-0.5, 0.0, -0.5],

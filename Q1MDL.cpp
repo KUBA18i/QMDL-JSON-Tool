@@ -160,6 +160,7 @@ Q1_MDL_file JSON2Q1MDL(fs::path inpath, json jsonMDL) {
     }
     catch (exception& e) {
         cout << "JSON Parsing Error: " << e.what() << endl;
+        exit(1);
     }
 }
 

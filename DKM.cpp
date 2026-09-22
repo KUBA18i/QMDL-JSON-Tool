@@ -161,6 +161,7 @@ DKM_file JSON2DKM(fs::path inpath, json jsonDKM) {
     }
     catch (exception& e) {
         cout << "JSON Parsing Error: " << e.what() << endl;
+        exit(1);
     }
 }
 

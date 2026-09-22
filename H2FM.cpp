@@ -9,160 +9,119 @@ void WriteBlockHeader(ofstream& outFile, string_view ident, int version, int siz
     outFile.write(reinterpret_cast<const char*>(&size), sizeof(uint32_t));
 }
 
-void JSON2H2FM(fs::path inpath, fs::path outpath, json jsonFM) {
+H2_FM_file JSON2H2FM(fs::path inpath, json jsonFM) {
     try {
-        ofstream outFile(outpath, ios::binary);
-        if (!outFile.is_open()) {
-            cout << "Error: Could not open output file." << endl;
-            return;
-        }
+        H2_FM_file newFM;
+        newFM.header.num_skins = jsonFM["skins"].size();
+        newFM.header.num_st = jsonFM["UV"].size();
+        newFM.header.num_tris = jsonFM["triangles"].size();
+        newFM.header.num_frames = jsonFM["frames"].size();
+        newFM.header.num_mesh_nodes = jsonFM["meshNodes"].size();
 
-        WriteBlockHeader(outFile, FM_HEADER_NAME, FM_HEADER_VER, sizeof(h2_fm_startheader_t));
-        h2_fm_startheader_t new_header;
-
-        new_header.num_skins = jsonFM["skins"].size();
-        new_header.num_st = jsonFM["UV"].size();
-        new_header.num_tris = jsonFM["triangles"].size();
-        new_header.num_frames = jsonFM["frames"].size();
-        new_header.num_mesh_nodes = jsonFM["meshNodes"].size();
-
-        new_header.num_xyz = -1;
+        newFM.header.num_xyz = -1;
         for (const auto& f : jsonFM["frames"]) {
-            if (new_header.num_xyz == -1)
-                new_header.num_xyz = f["verts"].size();
-            else if (new_header.num_xyz != f["verts"].size()) {
-                cout << "Error: Frame " << (f["name"]) << " has " << f["verts"].size() << " verts, but expected " << new_header.num_xyz << endl;
-                return;
+            if (newFM.header.num_xyz == -1)
+                newFM.header.num_xyz = f["verts"].size();
+            else if (newFM.header.num_xyz != f["verts"].size()) {
+                cout << "Error: Frame " << (f["name"]) << " has " << f["verts"].size() << " verts, but expected " << newFM.header.num_xyz << endl;
+                exit(1);
             }
         }
 
-        new_header.num_glcmds = 0;
+        newFM.header.num_glcmds = 0;
         for (const auto& g : jsonFM["glCommands"]) {
-            new_header.num_glcmds++;
-            new_header.num_glcmds += (g["verts"].size() * 3);
+            newFM.header.num_glcmds++;
+            newFM.header.num_glcmds += (g["verts"].size() * 3);
         }
-        new_header.num_glcmds += new_header.num_mesh_nodes;
+        newFM.header.num_glcmds += newFM.header.num_mesh_nodes;
 
-        new_header.framesize = new_header.num_xyz * 4 + 40;
+        newFM.header.framesize = newFM.header.num_xyz * 4 + 40;
 
         auto jheader = jsonFM.at("header");
-        new_header.skinwidth = jheader["skinwidth"];
-        new_header.skinheight = jheader["skinheight"];
+        newFM.header.skinwidth = jheader["skinwidth"];
+        newFM.header.skinheight = jheader["skinheight"];
 
-        outFile.write(reinterpret_cast<char*>(&new_header.skinwidth), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.skinheight), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.framesize), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.num_skins), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.num_xyz), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.num_st), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.num_tris), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.num_glcmds), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.num_frames), sizeof(int));
-        outFile.write(reinterpret_cast<char*>(&new_header.num_mesh_nodes), sizeof(int));
+        for (const auto& s : jsonFM["skins"])
+            newFM.skins.push_back(s);
 
-        WriteBlockHeader(outFile, FM_SKIN_NAME, FM_SKIN_VER, new_header.num_skins * 64);
-        for (const auto& s : jsonFM["skins"]) {
-            char name[64] = { 0 };
-            string sName = s;
-            strncpy(name, sName.c_str(), 63);
-            outFile.write(name, 64);
-        }
-
-        WriteBlockHeader(outFile, FM_ST_NAME, FM_ST_VER, new_header.num_st * 4);
         for (const auto& uv : jsonFM["UV"]) {
-            short s = uv[0];
-            short t = uv[1];
-            outFile.write(reinterpret_cast<char*>(&s), sizeof(s));
-            outFile.write(reinterpret_cast<char*>(&t), sizeof(t));
+            h2_fm_stvert_t newTC;
+            newTC.s = uv[0];
+            newTC.t = uv[1];
+            newFM.uv.push_back(newTC);
         }
 
-        WriteBlockHeader(outFile, FM_TRI_NAME, FM_TRI_VER, new_header.num_tris * 12);
         for (const auto& tri : jsonFM["triangles"]) {
-            short t[6] = { tri[0], tri[1], tri[2], tri[3], tri[4], tri[5] };
-            outFile.write(reinterpret_cast<char*>(t), sizeof(t));
+            h2_fm_triangle_t newTri;
+            newTri.vertexIndices[0] = tri[0];
+            newTri.vertexIndices[1] = tri[1];
+            newTri.vertexIndices[2] = tri[2];
+            newTri.textureIndices[0] = tri[3];
+            newTri.textureIndices[1] = tri[4];
+            newTri.textureIndices[2] = tri[5];
+            newFM.triangles.push_back(newTri);
         }
 
-        WriteBlockHeader(outFile, FM_FRAME_NAME, FM_FRAME_VER, new_header.framesize * new_header.num_frames);
         for (const auto& f : jsonFM["frames"]) {
-            float scale[3] = { f["scale"][0], f["scale"][1], f["scale"][2] };
-            float translate[3] = { f["translate"][0], f["translate"][1], f["translate"][2] };
-            char name[16] = { 0 };
+            h2_fm_frame_t newFrame;
+            newFrame.scale[0] = f["scale"][0];
+            newFrame.scale[1] = f["scale"][1];
+            newFrame.scale[2] = f["scale"][2];
+            newFrame.translate[0] = f["translate"][0];
+            newFrame.translate[1] = f["translate"][1];
+            newFrame.translate[2] = f["translate"][2];
+            memset(newFrame.name, 0, sizeof(newFrame.name));
             string sName = f["name"];
-            strncpy(name, sName.c_str(), 15);
-
-            outFile.write(reinterpret_cast<char*>(&scale), sizeof(scale));
-            outFile.write(reinterpret_cast<char*>(&translate), sizeof(translate));
-            outFile.write(name, 16);
-
+            strncpy(newFrame.name, sName.c_str(), sizeof(newFrame.name) - 1);
             for (const auto& v : f["verts"]) {
-                uint8_t vert[4] = { v[0], v[1], v[2], v[3] };
-                outFile.write(reinterpret_cast<char*>(&vert), 4);
+                h2_fm_triangleVertex_t newVert;
+                newVert.vertex[0] = v[0];
+                newVert.vertex[1] = v[1];
+                newVert.vertex[2] = v[2];
+                newVert.lightNormalIndex = v[3];
+                newFrame.vertices.push_back(newVert);
             }
+            newFM.frames.push_back(newFrame);
         }
 
-        int zeroCmd = 0;
-        WriteBlockHeader(outFile, FM_GLCMDS_NAME, FM_GLCMDS_VER, new_header.num_glcmds * 4);
-        int current_glcmd_idx = 0;
-        size_t current_mesh_node = 0;
         for (const auto& g : jsonFM["glCommands"]) {
-            if (current_mesh_node + 1 < jsonFM["meshNodes"].size()) {
-                int next_start = jsonFM["meshNodes"][current_mesh_node + 1]["start_glcmds"].get<int>();
-                if (current_glcmd_idx == next_start - 1) {
-                    outFile.write(reinterpret_cast<char*>(&zeroCmd), sizeof(int));
-                    current_glcmd_idx++;
-                    current_mesh_node++;
-                }
-            }
-            int vcount = g["verts"].size();
-            if (g["strip"].get<bool>() == false) vcount *= (-1);
-            outFile.write(reinterpret_cast<char*>(&vcount), sizeof(vcount));
-            current_glcmd_idx++;
+            h2_fm_glCommand_t newGLC;
+            newGLC.count = g["verts"].size();
+            if (g["strip"].get<bool>() == false) newGLC.count *= (-1);
             for (const auto& v : g["verts"]) {
-                float vs = v[0];
-                float vt = v[1];
-                int vertexIndex = v[2];
-                outFile.write(reinterpret_cast<char*>(&vs), sizeof(vs));
-                outFile.write(reinterpret_cast<char*>(&vt), sizeof(vt));
-                outFile.write(reinterpret_cast<char*>(&vertexIndex), sizeof(vertexIndex));
-                current_glcmd_idx += 3;
+                h2_fm_glCommandVertex_t newGLV;
+                newGLV.s = v[0];
+                newGLV.t = v[1];
+                newGLV.vertexIndex = v[2];
+                newGLC.vertices.push_back(newGLV);
             }
+            newFM.glCommands.push_back(newGLC);
         }
-        outFile.write(reinterpret_cast<char*>(&zeroCmd), sizeof(int));
-        current_glcmd_idx++;
         
-        WriteBlockHeader(outFile, FM_MESH_NAME, FM_MESH_VER, new_header.num_mesh_nodes * sizeof(h2_fm_meshnode_t));
         for (const auto& mn : jsonFM["meshNodes"]) {
-            for (const auto& u : mn["unused"]) {
-                uint8_t newun = u;
-                outFile.write(reinterpret_cast<char*>(&newun), sizeof(newun));
-            }
-            for (const auto& v : mn["verts"]) {
-                uint8_t newvert = v;
-                outFile.write(reinterpret_cast<char*>(&newvert), sizeof(newvert));
-            }
-            short start = mn["start_glcmds"];
-            outFile.write(reinterpret_cast<char*>(&start), sizeof(start));
-            short end = mn["num_glcmds"];
-            outFile.write(reinterpret_cast<char*>(&end), sizeof(end));
+            h2_fm_meshnode_t newMN;
+            for (int i = 0; i < 256; i++)
+                newMN.unusedTris[i] = mn["unusedTris"][i];
+            for (int i = 0; i < 256; i++)
+                newMN.unusedVerts[i] = mn["unusedVerts"][i];
+            newMN.start_glcmds= mn["start_glcmds"];
+            newMN.num_glcmds = mn["num_glcmds"];
+            newFM.meshNodes.push_back(newMN);
         }
         
         if (jsonFM.contains("skeleton") && !jsonFM["skeleton"].is_null()) {
-            cout << "Skeleton data block present." << endl;
-            h2_fm_SkeletonBlock_t newskelblock;
-            int skelblocksize = sizeof(int) * 3;
+            newFM.skeleton.isUsed = true;
             auto jskeleton = jsonFM.at("skeleton");
-            newskelblock.skeletalType = jskeleton["skeletalType"];
-            newskelblock.numClusters = jskeleton["clusters"].size();
-            skelblocksize += newskelblock.numClusters * sizeof(int);
+            newFM.skeleton.skeletalType = jskeleton["skeletalType"];
+            newFM.skeleton.numClusters = jskeleton["clusters"].size();
             for (const auto& c : jskeleton["clusters"]) {
                 h2_fm_SkeletalCluster_t newc;
                 for (const auto& v : c)
                     newc.vertices.push_back(v.get<int>());
-                newskelblock.clusters.push_back(newc);
-                skelblocksize += newc.vertices.size() * sizeof(int);
+                newFM.skeleton.clusters.push_back(newc);
             }
-            newskelblock.haveSkeleton = jskeleton["haveSkeleton"].get<bool>() ? 1 : 0;
-            if (newskelblock.haveSkeleton) {
+            newFM.skeleton.haveSkeleton = jskeleton["haveSkeleton"].get<bool>() ? 1 : 0;
+            if (newFM.skeleton.haveSkeleton) {
                 for (const auto& f : jskeleton["frames"]) {
                     h2_fm_SkeletonFrame_t newframe;
                     for (const auto& p : f) {
@@ -178,47 +137,19 @@ void JSON2H2FM(fs::path inpath, fs::path outpath, json jsonFM) {
                         newp.up[2] = p[8];
                         newframe.joints.push_back(newp);
                     }
-                    newskelblock.frames.push_back(newframe);
-                    skelblocksize += newframe.joints.size() * sizeof(h2_fm_Placement_t);
+                    newFM.skeleton.frames.push_back(newframe);
                 }
             }
-            
-            WriteBlockHeader(outFile, FM_SKELETON_NAME, FM_SKELETON_VER, skelblocksize);
-            outFile.write(reinterpret_cast<char*>(&newskelblock.skeletalType), sizeof(newskelblock.skeletalType));
-            outFile.write(reinterpret_cast<char*>(&newskelblock.numClusters), sizeof(newskelblock.numClusters));
-            for (const auto& c : newskelblock.clusters) {
-                int count = c.vertices.size();
-                outFile.write(reinterpret_cast<char*>(&count), sizeof(int));
-            }
-            for (const auto& c : newskelblock.clusters)
-                for (auto v : c.vertices)
-                    outFile.write(reinterpret_cast<char*>(&v), sizeof(v));
-            outFile.write(reinterpret_cast<char*>(&newskelblock.haveSkeleton), sizeof(newskelblock.haveSkeleton));
-            if (newskelblock.haveSkeleton)
-                for (const auto& f : newskelblock.frames)
-                    for (auto j : f.joints) {
-                        outFile.write(reinterpret_cast<char*>(&j.origin[0]), sizeof(j.origin[0]));
-                        outFile.write(reinterpret_cast<char*>(&j.origin[1]), sizeof(j.origin[1]));
-                        outFile.write(reinterpret_cast<char*>(&j.origin[2]), sizeof(j.origin[2]));
-                        outFile.write(reinterpret_cast<char*>(&j.direction[0]), sizeof(j.direction[0]));
-                        outFile.write(reinterpret_cast<char*>(&j.direction[1]), sizeof(j.direction[1]));
-                        outFile.write(reinterpret_cast<char*>(&j.direction[2]), sizeof(j.direction[2]));
-                        outFile.write(reinterpret_cast<char*>(&j.up[0]), sizeof(j.up[0]));
-                        outFile.write(reinterpret_cast<char*>(&j.up[1]), sizeof(j.up[1]));
-                        outFile.write(reinterpret_cast<char*>(&j.up[2]), sizeof(j.up[2]));
-                    }  
         }
         else
-            cout << "Skeleton data is absent, skipping." << endl;
+            newFM.skeleton.isUsed = false;
 
         if (jsonFM.contains("references") && !jsonFM["references"].is_null()) {
-            cout << "Reference data block present." << endl;
-            h2_fm_ReferenceBlock_t newrefblock;
+            newFM.references.isUsed = true;
             auto jref = jsonFM.at("references");
-            int refblocksize = (sizeof(int) * 2) + (jref["placements"].size() * sizeof(h2_fm_Placement_t));
-            newrefblock.referenceType = jref["referenceType"];
-            newrefblock.haveRefs = jref["haveRefs"].get<bool>() ? 1 : 0;
-            if (newrefblock.haveRefs)
+            newFM.references.referenceType = jref["referenceType"];
+            newFM.references.haveRefs = jref["haveRefs"].get<bool>() ? 1 : 0;
+            if (newFM.references.haveRefs)
                 for (const auto& p : jref["placements"]) {
                     h2_fm_Placement_t newp;
                     newp.origin[0] = p[0];
@@ -230,14 +161,148 @@ void JSON2H2FM(fs::path inpath, fs::path outpath, json jsonFM) {
                     newp.up[0] = p[6];
                     newp.up[1] = p[7];
                     newp.up[2] = p[8];
-                    newrefblock.placements.push_back(newp);
+                    newFM.references.placements.push_back(newp);
                 }
+        }
+        else
+            newFM.references.isUsed = false;
 
-            WriteBlockHeader(outFile, FM_REFERENCES_NAME, FM_REFERENCES_VER, refblocksize);
-            outFile.write(reinterpret_cast<char*>(&newrefblock.referenceType), sizeof(newrefblock.referenceType));
-            outFile.write(reinterpret_cast<char*>(&newrefblock.haveRefs), sizeof(newrefblock.haveRefs));
-            if (newrefblock.haveRefs)
-                for (auto p : newrefblock.placements) {
+        cout << "JSON parsed, creating FM..." << endl;
+        return newFM;
+    }
+    catch (exception& e) {
+        cout << "JSON Parsing Error: " << e.what() << endl;
+        exit(1);
+    }
+}
+
+void WriteFM(H2_FM_file newFM, fs::path outPath) {
+try {
+        ofstream outFile(outPath, ios::binary);
+        if (!outFile.is_open()) {
+            cout << "Error: Could not open output file." << endl;
+            return;
+        }
+
+        WriteBlockHeader(outFile, FM_HEADER_NAME, FM_HEADER_VER, sizeof(h2_fm_startheader_t));
+        outFile.write(reinterpret_cast<char*>(&newFM.header.skinwidth), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newFM.header.skinheight), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newFM.header.framesize), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newFM.header.num_skins), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newFM.header.num_xyz), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newFM.header.num_st), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newFM.header.num_tris), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newFM.header.num_glcmds), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newFM.header.num_frames), sizeof(int));
+        outFile.write(reinterpret_cast<char*>(&newFM.header.num_mesh_nodes), sizeof(int));
+
+        WriteBlockHeader(outFile, FM_SKIN_NAME, FM_SKIN_VER, newFM.header.num_skins * 64);
+        for (const auto& s : newFM.skins) {
+            char name[64] = { 0 };
+            strncpy(name, s.c_str(), 63);
+            outFile.write(name, 64);
+        }
+
+        WriteBlockHeader(outFile, FM_ST_NAME, FM_ST_VER, newFM.header.num_st * 4);
+        for (auto& uv : newFM.uv) {
+            outFile.write(reinterpret_cast<char*>(&uv.s), sizeof(uv.s));
+            outFile.write(reinterpret_cast<char*>(&uv.t), sizeof(uv.t));
+        }
+
+        WriteBlockHeader(outFile, FM_TRI_NAME, FM_TRI_VER, newFM.header.num_tris * 12);
+        for (auto& tri : newFM.triangles)
+            outFile.write(reinterpret_cast<char*>(&tri), sizeof(tri));
+
+        WriteBlockHeader(outFile, FM_FRAME_NAME, FM_FRAME_VER, newFM.header.framesize * newFM.header.num_frames);
+        for (auto& f : newFM.frames) {
+            outFile.write(reinterpret_cast<char*>(&f.scale), sizeof(f.scale));
+            outFile.write(reinterpret_cast<char*>(&f.translate), sizeof(f.translate));
+            outFile.write(f.name, 16);
+            for (auto& v : f.vertices)
+                outFile.write(reinterpret_cast<char*>(&v), 4);
+        }
+
+        int zeroCmd = 0;
+        WriteBlockHeader(outFile, FM_GLCMDS_NAME, FM_GLCMDS_VER, newFM.header.num_glcmds * 4);
+        int current_glcmd_idx = 0;
+        size_t current_mesh_node = 0;
+        for (auto& g : newFM.glCommands) {
+            if (current_mesh_node + 1 < newFM.meshNodes.size()) {
+                int next_start = newFM.meshNodes[current_mesh_node + 1].start_glcmds;
+                if (current_glcmd_idx == next_start - 1) {
+                    outFile.write(reinterpret_cast<char*>(&zeroCmd), sizeof(int));
+                    current_glcmd_idx++;
+                    current_mesh_node++;
+                }
+            }
+            outFile.write(reinterpret_cast<char*>(&g.count), sizeof(g.count));
+            current_glcmd_idx++;
+            for (auto& v : g.vertices){
+                outFile.write(reinterpret_cast<char*>(&v.s), sizeof(v.s));
+                outFile.write(reinterpret_cast<char*>(&v.t), sizeof(v.t));
+                outFile.write(reinterpret_cast<char*>(&v.vertexIndex), sizeof(v.vertexIndex));
+                current_glcmd_idx += 3;
+            }
+        }
+        outFile.write(reinterpret_cast<char*>(&zeroCmd), sizeof(int));
+        current_glcmd_idx++;
+
+        WriteBlockHeader(outFile, FM_MESH_NAME, FM_MESH_VER, newFM.header.num_mesh_nodes * sizeof(h2_fm_meshnode_t));
+        for (auto& mn : newFM.meshNodes) {
+            for (auto& ut : mn.unusedTris)
+                outFile.write(reinterpret_cast<char*>(&ut), sizeof(ut));
+            for (auto& uv : mn.unusedVerts)
+                outFile.write(reinterpret_cast<char*>(&uv), sizeof(uv));
+            outFile.write(reinterpret_cast<char*>(&mn.start_glcmds), sizeof(mn.start_glcmds));
+            outFile.write(reinterpret_cast<char*>(&mn.num_glcmds), sizeof(mn.num_glcmds));
+        }
+
+        if (newFM.skeleton.isUsed) {
+            cout << "Skeleton data block present." << endl;
+            int skelblocksize = sizeof(int) * 3;
+            skelblocksize += newFM.skeleton.numClusters * sizeof(int);
+            for (const auto& c : newFM.skeleton.clusters)
+                skelblocksize += c.vertices.size() * sizeof(int);
+            if (newFM.skeleton.haveSkeleton)
+                for (const auto& f : newFM.skeleton.frames)
+                    skelblocksize += f.joints.size() * sizeof(h2_fm_Placement_t);
+
+            WriteBlockHeader(outFile, FM_SKELETON_NAME, FM_SKELETON_VER, skelblocksize);
+            outFile.write(reinterpret_cast<char*>(&newFM.skeleton.skeletalType), sizeof(newFM.skeleton.skeletalType));
+            outFile.write(reinterpret_cast<char*>(&newFM.skeleton.numClusters), sizeof(newFM.skeleton.numClusters));
+            for (const auto& c : newFM.skeleton.clusters) {
+                int count = c.vertices.size();
+                outFile.write(reinterpret_cast<char*>(&count), sizeof(int));
+            }
+            for (const auto& c : newFM.skeleton.clusters)
+                for (auto v : c.vertices)
+                    outFile.write(reinterpret_cast<char*>(&v), sizeof(v));
+            outFile.write(reinterpret_cast<char*>(&newFM.skeleton.haveSkeleton), sizeof(newFM.skeleton.haveSkeleton));
+            if (newFM.skeleton.haveSkeleton)
+                for (const auto& f : newFM.skeleton.frames)
+                    for (auto j : f.joints) {
+                        outFile.write(reinterpret_cast<char*>(&j.origin[0]), sizeof(j.origin[0]));
+                        outFile.write(reinterpret_cast<char*>(&j.origin[1]), sizeof(j.origin[1]));
+                        outFile.write(reinterpret_cast<char*>(&j.origin[2]), sizeof(j.origin[2]));
+                        outFile.write(reinterpret_cast<char*>(&j.direction[0]), sizeof(j.direction[0]));
+                        outFile.write(reinterpret_cast<char*>(&j.direction[1]), sizeof(j.direction[1]));
+                        outFile.write(reinterpret_cast<char*>(&j.direction[2]), sizeof(j.direction[2]));
+                        outFile.write(reinterpret_cast<char*>(&j.up[0]), sizeof(j.up[0]));
+                        outFile.write(reinterpret_cast<char*>(&j.up[1]), sizeof(j.up[1]));
+                        outFile.write(reinterpret_cast<char*>(&j.up[2]), sizeof(j.up[2]));
+                    }
+        }
+        else
+            cout << "Skeleton data is absent, skipping." << endl;
+
+        if (newFM.references.isUsed) {
+            cout << "Reference data block present." << endl;
+            WriteBlockHeader(outFile, FM_REFERENCES_NAME, FM_REFERENCES_VER,
+                (sizeof(int) * 2) + (newFM.references.placements.size() * sizeof(h2_fm_Placement_t)));
+            outFile.write(reinterpret_cast<char*>(&newFM.references.referenceType), sizeof(newFM.references.referenceType));
+            outFile.write(reinterpret_cast<char*>(&newFM.references.haveRefs), sizeof(newFM.references.haveRefs));
+            if (newFM.references.haveRefs)
+                for (auto p : newFM.references.placements) {
                     outFile.write(reinterpret_cast<char*>(&p.origin[0]), sizeof(p.origin[0]));
                     outFile.write(reinterpret_cast<char*>(&p.origin[1]), sizeof(p.origin[1]));
                     outFile.write(reinterpret_cast<char*>(&p.origin[2]), sizeof(p.origin[2]));
@@ -253,18 +318,17 @@ void JSON2H2FM(fs::path inpath, fs::path outpath, json jsonFM) {
             cout << "Reference data is absent, skipping." << endl;
 
         outFile.close();
-        cout << "FM constructed successfully: " << outpath << endl;
+        cout << "FM constructed successfully: " << outPath << endl;
 
     }
     catch (exception& e) {
-        cout << "JSON Parsing Error: " << e.what() << endl;
+        cout << "Error: " << e.what() << endl;
     }
 }
 
-
-h2_fm_model_t ParseFM(fs::path filePath) {
+H2_FM_file ReadFM(fs::path filePath) {
     ifstream inFile(filePath, ios::binary);
-    h2_fm_model_t NewFlexModel;
+    H2_FM_file NewFlexModel;
 
     if (!inFile.is_open()) {
         cout << "Error: Could not open file " << filePath << endl;
@@ -375,12 +439,12 @@ h2_fm_model_t ParseFM(fs::path filePath) {
                 for (int j = 0; j < 256; j++) {
                     uint8_t newun;
                     inFile.read(reinterpret_cast<char*>(&newun), sizeof(newun));
-                    newmeshnode.unused[j] = newun;
+                    newmeshnode.unusedTris[j] = newun;
                 }
                 for (int j = 0; j < 256; j++) {
                     uint8_t newvert;
                     inFile.read(reinterpret_cast<char*>(&newvert), sizeof(newvert));
-                    newmeshnode.verts[j] = newvert;
+                    newmeshnode.unusedVerts[j] = newvert;
                 }
                 inFile.read(reinterpret_cast<char*>(&newmeshnode.start_glcmds), sizeof(newmeshnode.start_glcmds));
                 inFile.read(reinterpret_cast<char*>(&newmeshnode.num_glcmds), sizeof(newmeshnode.num_glcmds));
@@ -456,7 +520,7 @@ h2_fm_model_t ParseFM(fs::path filePath) {
     return NewFlexModel;
 }
 
-void FM2JSON(h2_fm_model_t NewFlexModel, fs::path outPath) {
+void FM2JSON(H2_FM_file NewFlexModel, fs::path outPath) {
     cout << "Preparing JSON..." << endl;
      json jsonFM;
      jsonFM["Format"] = "FlexModel";
@@ -524,12 +588,12 @@ void FM2JSON(h2_fm_model_t NewFlexModel, fs::path outPath) {
      jsonFM["meshNodes"] = json::array();
      for (const auto& mn : NewFlexModel.meshNodes) {
          json jmn;
-         jmn["unused"] = json::array();
+         jmn["unusedTris"] = json::array();
          for (int i = 0; i < 256; i++)
-             jmn["unused"].push_back(mn.unused[i]);
-         jmn["verts"] = json::array();
+             jmn["unusedTris"].push_back(mn.unusedTris[i]);
+         jmn["unusedVerts"] = json::array();
          for (int i = 0; i < 256; i++)
-             jmn["verts"].push_back(mn.verts[i]);
+             jmn["unusedVerts"].push_back(mn.unusedVerts[i]);
          jmn["start_glcmds"] = mn.start_glcmds;
          jmn["num_glcmds"] = mn.num_glcmds;
          jsonFM["meshNodes"].push_back(jmn);

@@ -158,6 +158,7 @@ Q3_MD3_file JSON2Q3MD3(fs::path inpath, json jsonMD3) {
     }
     catch (exception& e) {
         cout << "JSON Parsing Error: " << e.what() << endl;
+        exit(1);
     }
 }
 

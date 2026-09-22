@@ -116,6 +116,7 @@ Q2_MD2_file JSON2Q2MD2(fs::path inpath, json jsonMD2) {
     }
     catch (exception& e) {
         cout << "JSON Parsing Error: " << e.what() << endl;
+        exit(1);
     }
 }
 

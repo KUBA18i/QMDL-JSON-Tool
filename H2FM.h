@@ -98,8 +98,8 @@ struct h2_fm_triangleVertex_t {
 };
 
 struct h2_fm_meshnode_t {
-    uint8_t unused[256];
-    uint8_t verts[256];
+    uint8_t unusedTris[256];
+    uint8_t unusedVerts[256];
     short start_glcmds;
     short num_glcmds;
 };
@@ -145,7 +145,7 @@ struct h2_fm_glCommand_t {
     vector<h2_fm_glCommandVertex_t> vertices;
 };
 
-struct h2_fm_model_t {
+struct H2_FM_file {
     h2_fm_startheader_t header;
     vector<h2_fm_stvert_t> uv;
     vector<h2_fm_triangle_t> triangles;
@@ -157,6 +157,7 @@ struct h2_fm_model_t {
     h2_fm_ReferenceBlock_t references;
 };
 
-h2_fm_model_t ParseFM(fs::path filePath);
-void FM2JSON(h2_fm_model_t model, fs::path outPath);
-void JSON2H2FM(fs::path inpath, fs::path outpath, json jsonFM);
+H2_FM_file JSON2H2FM(fs::path inpath, json jsonFM);
+void WriteFM(H2_FM_file model, fs::path outPath);
+H2_FM_file ReadFM(fs::path filePath);
+void FM2JSON(H2_FM_file NewFlexModel, fs::path outPath);

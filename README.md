@@ -24,10 +24,10 @@ Drag and drop a model file to create a JSON file, and vice versa. If using the c
 After you have a JSON file, you can use `format_json.py` to remove the unnecessary spaces and newlines from the file; this decreases the file size significantly. Doing this is optional though.
 
 # Possible output differences
-The resulting files should be identical to the original model files, with the following exceptions:
-- Char arrays will often have trailing garbage data after the null terminator in the original file, while this program outputs a clean array of null bytes instead.
-- Some Serious Sam 1 models were originally exported with little regard to some of the data fields, and thus they often contain NaN floats and extreme values. The JSON serialiser turns NaN into null values, which the MDL exporter turns back into NaN floats, albeit with a likely different exact hex value.
-- Some SS1 models don't feature a COLI chunk, and thus have collision boxes set to spheres by default. The MDL exporter ensures that the COLI chunk is present.
+The resulting files should be identical to the original model files, with the following exceptions:  
+- Char arrays will often have trailing garbage data after the null terminator in the original file, while this program outputs a clean array of null bytes instead.  
+- Kingpin's MDX models have an offsetDummyEnd value, that should be identical to the regular end offset. In some official models though, they have a bogus value, and they can get lost during conversion, as the program calculates all the offsets from the data size.  
+- Some Serious Sam 1 models were originally exported with little regard to some of the data fields, and thus they often contain NaN floats and extreme values. The JSON serialiser turns NaN into null values, which the MDL exporter turns back into NaN floats, albeit with a likely different exact hex value.  
 None of the above have any functional effects on the models themselves, and the games will load them like their normal counterparts.
 
 # Compile

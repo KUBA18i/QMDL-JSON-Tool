@@ -36,14 +36,14 @@ void JSONChoiceSplit(fs::path inpath) {
         cout << "Identified Heretic 2 FlexModel JSON." << endl;
         fs::path outPath = inpath;
         outPath.replace_extension(".fm");
-        JSON2H2FM(inpath, outPath, jsoncontents);
+        WriteFM(JSON2H2FM(inpath, jsoncontents), outPath);
         return;
     }
     if (jsoncontents.contains("Format") && jsoncontents.at("Format").get<string>() == "SeriousSam1MDL") {
         cout << "Identified Serious Sam 1 MDL JSON." << endl;
         fs::path outPath = inpath;
         outPath.replace_extension(".mdl");
-        JSON2SS1MDL(inpath, outPath, jsoncontents);
+        WriteSS1MDL(outPath, JSON2SS1MDL(inpath, jsoncontents));
         return;
     }
     auto jheader = jsoncontents.at("header");
@@ -134,7 +134,7 @@ int main(int argc, char* argv[]) {
         }
         else if (memcmp(ident, "MDAT", 4) == 0) {
             cout << "Identified Serious Sam model file container: " << string(ident, 4) << endl;
-            SS1MDL2JSON(ParseSS1MDL(filePath), outPath);
+            SS1MDL2JSON(ReadSS1MDL(filePath), outPath);
         }
         else {
             cout << "Error: Invalid ident and version numbers: " << string(ident, 4) << " and " << versionnum << endl;
@@ -171,7 +171,7 @@ int main(int argc, char* argv[]) {
         cout << "Processing Heretic 2 FlexModel file..." << endl;
         fs::path outPath = filePath;
         outPath.replace_extension(".json");
-        FM2JSON(ParseFM(filePath), outPath);
+        FM2JSON(ReadFM(filePath), outPath);
     }
     else if (extension == ".mdx") {
         cout << "Processing MDX file..." << endl;

@@ -166,6 +166,7 @@ KP_MDX_file JSON2KPMDX(fs::path inpath, json jsonMDX) {
     }
     catch (exception& e) {
         cout << "JSON Parsing Error: " << e.what() << endl;
+        exit(1);
     }
 }
 

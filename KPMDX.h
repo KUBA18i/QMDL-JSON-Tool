@@ -43,6 +43,8 @@ struct kp_mdx_header_t
     int offsetBBoxFrames;
     int offsetDummyEnd; //same as offsetEnd
     int offsetEnd;
+
+    bool HDModel = false;
 };
 
 struct kp_mdx_triangleVertex_t
@@ -51,12 +53,18 @@ struct kp_mdx_triangleVertex_t
     uint8_t lightNormalIndex;
 };
 
+struct kp_mdx_HDtriangleVertex_t
+{
+    uint8_t vertex[3];
+};
+
 struct kp_mdx_frame_t
 {
     float scale[3];
     float translate[3];
     char name[16];
     vector <kp_mdx_triangleVertex_t> vertices;
+    vector <kp_mdx_HDtriangleVertex_t> HDvertices;
 };
 
 struct kp_mdx_triangle_t

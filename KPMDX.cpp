@@ -44,12 +44,18 @@ KP_MDX_file JSON2KPMDX(fs::path inpath, json jsonMDX) {
         }
         newMDX.header.numGlCommands++;
 
-        newMDX.header.frameSize = newMDX.header.numVertices * 4 + 40;
+        
 
         auto jheader = jsonMDX.at("header");
         newMDX.header.skinWidth = jheader["skinWidth"];
         newMDX.header.skinHeight = jheader["skinHeight"];
+        newMDX.header.HDModel = jheader["HDModel"];
         
+        if(newMDX.header.HDModel)
+            newMDX.header.frameSize = newMDX.header.numVertices * 7 + 40;
+        else
+            newMDX.header.frameSize = newMDX.header.numVertices * 4 + 40;
+
         newMDX.header.offsetSkins = 92;
         for (const auto& s : jsonMDX["skins"])
             newMDX.skinpaths.push_back(s);
@@ -85,6 +91,15 @@ KP_MDX_file JSON2KPMDX(fs::path inpath, json jsonMDX) {
                 newVert.vertex[2] = v[2];
                 newVert.lightNormalIndex = v[3];
                 newFrame.vertices.push_back(newVert);
+            }
+            if (newMDX.header.HDModel) {
+                for (const auto& v : f["HDverts"]) {
+                    kp_mdx_HDtriangleVertex_t newVert;
+                    newVert.vertex[0] = v[0];
+                    newVert.vertex[1] = v[1];
+                    newVert.vertex[2] = v[2];
+                    newFrame.HDvertices.push_back(newVert);
+                }
             }
             newMDX.frames.push_back(newFrame);
         }
@@ -217,6 +232,9 @@ void WriteKPMDX(fs::path outpath, KP_MDX_file newMDX) {
             outFile.write(f.name, 16);
             for (auto& v : f.vertices)
                 outFile.write(reinterpret_cast<char*>(&v), sizeof(v));
+            if (newMDX.header.HDModel)
+                for (auto& v : f.HDvertices)
+                    outFile.write(reinterpret_cast<char*>(&v), sizeof(v));
         }
 
         for (auto& g : newMDX.GLCommands) {
@@ -309,6 +327,14 @@ KP_MDX_file ReadKPMDX(fs::path inpath) {
     inFile.read(reinterpret_cast<char*>(&NewMDX.header.offsetDummyEnd), sizeof(NewMDX.header.offsetDummyEnd));
     inFile.read(reinterpret_cast<char*>(&NewMDX.header.offsetEnd), sizeof(NewMDX.header.offsetEnd));
 
+    if (NewMDX.header.frameSize == 40 + NewMDX.header.numVertices * 7) {
+        NewMDX.header.HDModel = true;
+        cout << "Model is HD (16-bit vertices)." << endl;
+    }
+    else
+        cout << "Model is SD (8-bit vertices)." << endl;
+        
+
     if (NewMDX.header.offsetSkins < NewMDX.header.offsetTriangles &&
         NewMDX.header.offsetTriangles < NewMDX.header.offsetFrames &&
         NewMDX.header.offsetFrames < NewMDX.header.offsetGlCommands &&
@@ -373,6 +399,15 @@ KP_MDX_file ReadKPMDX(fs::path inpath) {
             inFile.read(reinterpret_cast<char*>(&newvert.vertex[2]), sizeof(newvert.vertex[2]));
             inFile.read(reinterpret_cast<char*>(&newvert.lightNormalIndex), sizeof(newvert.lightNormalIndex));
             newframe.vertices.push_back(newvert);
+        }
+        if (NewMDX.header.HDModel) {
+            for (int j = 0; j < NewMDX.header.numVertices; j++) {
+                kp_mdx_HDtriangleVertex_t newvert;
+                inFile.read(reinterpret_cast<char*>(&newvert.vertex[0]), sizeof(newvert.vertex[0]));
+                inFile.read(reinterpret_cast<char*>(&newvert.vertex[1]), sizeof(newvert.vertex[1]));
+                inFile.read(reinterpret_cast<char*>(&newvert.vertex[2]), sizeof(newvert.vertex[2]));
+                newframe.HDvertices.push_back(newvert);
+            }
         }
         NewMDX.frames.push_back(newframe);
     }
@@ -491,6 +526,7 @@ void KPMDX2JSON(const KP_MDX_file& NewMDX, fs::path outpath) {
     jheader["offsetBBoxFrames"] = NewMDX.header.offsetBBoxFrames;
     jheader["offsetDummyEnd"] = NewMDX.header.offsetDummyEnd;
     jheader["offsetEnd"] = NewMDX.header.offsetEnd;
+    jheader["HDModel"] = NewMDX.header.HDModel;
     jsonMDX["header"] = jheader;
 
     jsonMDX["skins"] = json::array();;
@@ -519,6 +555,16 @@ void KPMDX2JSON(const KP_MDX_file& NewMDX, fs::path outpath) {
             jvert = { frame.vertices[i].vertex[0],frame.vertices[i].vertex[1], frame.vertices[i].vertex[2], frame.vertices[i].lightNormalIndex };
             jframe["verts"].push_back(jvert);
         }
+        if (NewMDX.header.HDModel) {
+            jframe["HDverts"] = json::array();
+            for (int i = 0; i < NewMDX.header.numVertices; i++) {
+                json jvert;
+                jvert = { frame.HDvertices[i].vertex[0],frame.HDvertices[i].vertex[1], frame.HDvertices[i].vertex[2] };
+                jframe["HDverts"].push_back(jvert);
+            }
+        }
+        else
+            jframe["HDverts"] = nullptr;
         jsonMDX["frames"].push_back(jframe);
 
     }

@@ -28,14 +28,9 @@ H2_FM_file JSON2H2FM(fs::path inpath, json jsonFM) {
             }
         }
 
-        newFM.header.num_glcmds = 0;
-        for (const auto& g : jsonFM["glCommands"]) {
-            newFM.header.num_glcmds++;
-            newFM.header.num_glcmds += (g["verts"].size() * 3);
-        }
-        newFM.header.num_glcmds += newFM.header.num_mesh_nodes;
-
         newFM.header.framesize = newFM.header.num_xyz * 4 + 40;
+
+        //newFM.header.num_glcmds is calculated later
 
         auto jheader = jsonFM.at("header");
         newFM.header.skinwidth = jheader["skinwidth"];
@@ -84,16 +79,23 @@ H2_FM_file JSON2H2FM(fs::path inpath, json jsonFM) {
             newFM.frames.push_back(newFrame);
         }
 
+        newFM.header.num_glcmds = 0;
         for (const auto& g : jsonFM["glCommands"]) {
+            newFM.header.num_glcmds += 1 + (int)g["verts"].size() * 3;
             h2_fm_glCommand_t newGLC;
-            newGLC.count = g["verts"].size();
-            if (g["strip"].get<bool>() == false) newGLC.count *= (-1);
-            for (const auto& v : g["verts"]) {
-                h2_fm_glCommandVertex_t newGLV;
-                newGLV.s = v[0];
-                newGLV.t = v[1];
-                newGLV.vertexIndex = v[2];
-                newGLC.vertices.push_back(newGLV);
+            if (g["strip"].is_null())
+                newGLC.count = 0; //glc terminator
+            else {
+                newGLC.count = (int)g["verts"].size();
+                if (!g["strip"].get<bool>())
+                    newGLC.count = -newGLC.count;
+                for (const auto& v : g["verts"]) {
+                    h2_fm_glCommandVertex_t newGLV;
+                    newGLV.s = v[0];
+                    newGLV.t = v[1];
+                    newGLV.vertexIndex = v[2];
+                    newGLC.vertices.push_back(newGLV);
+                }
             }
             newFM.glCommands.push_back(newGLC);
         }
@@ -222,30 +224,21 @@ try {
                 outFile.write(reinterpret_cast<char*>(&v), 4);
         }
 
-        int zeroCmd = 0;
-        WriteBlockHeader(outFile, FM_GLCMDS_NAME, FM_GLCMDS_VER, newFM.header.num_glcmds * 4);
-        int current_glcmd_idx = 0;
-        size_t current_mesh_node = 0;
-        for (auto& g : newFM.glCommands) {
-            if (current_mesh_node + 1 < newFM.meshNodes.size()) {
-                int next_start = newFM.meshNodes[current_mesh_node + 1].start_glcmds;
-                if (current_glcmd_idx == next_start - 1) {
-                    outFile.write(reinterpret_cast<char*>(&zeroCmd), sizeof(int));
-                    current_glcmd_idx++;
-                    current_mesh_node++;
-                }
-            }
-            outFile.write(reinterpret_cast<char*>(&g.count), sizeof(g.count));
-            current_glcmd_idx++;
-            for (auto& v : g.vertices){
-                outFile.write(reinterpret_cast<char*>(&v.s), sizeof(v.s));
-                outFile.write(reinterpret_cast<char*>(&v.t), sizeof(v.t));
-                outFile.write(reinterpret_cast<char*>(&v.vertexIndex), sizeof(v.vertexIndex));
-                current_glcmd_idx += 3;
+        vector<char> glPayload;
+        auto put = [&](const void* p, size_t n) {
+            const char* c = reinterpret_cast<const char*>(p);
+            glPayload.insert(glPayload.end(), c, c + n);
+            };
+        for (const auto& g : newFM.glCommands) {
+            put(&g.count, sizeof(int)); //count of 0 is a glc terminator
+            for (const auto& v : g.vertices) {
+                put(&v.s, sizeof(float));
+                put(&v.t, sizeof(float));
+                put(&v.vertexIndex, sizeof(int));
             }
         }
-        outFile.write(reinterpret_cast<char*>(&zeroCmd), sizeof(int));
-        current_glcmd_idx++;
+        WriteBlockHeader(outFile, FM_GLCMDS_NAME, FM_GLCMDS_VER, (int)glPayload.size());
+        outFile.write(glPayload.data(), glPayload.size());
 
         WriteBlockHeader(outFile, FM_MESH_NAME, FM_MESH_VER, newFM.header.num_mesh_nodes * sizeof(h2_fm_meshnode_t));
         for (auto& mn : newFM.meshNodes) {
@@ -411,16 +404,18 @@ H2_FM_file ReadFM(fs::path filePath) {
             cout << "Frame block parsed." << endl;
         }
         else if (string_view(blockHeader.ident) == FM_GLCMDS_NAME && blockHeader.version == FM_GLCMDS_VER) {
-            for (int i = 0; i < NewFlexModel.header.num_mesh_nodes; i++) {
-                while (true) {
-                    int command;
-                    inFile.read(reinterpret_cast<char*>(&command), sizeof(int));
-                    
-                    if (command == 0) break; // End of commands
-
-                    h2_fm_glCommand_t cmd;
-                    cmd.count = command;
+            const streamoff blockEnd = (streamoff)curpos + blockHeader.size;
+            while ((streamoff)inFile.tellg() < blockEnd) {
+                int command = 0;
+                inFile.read(reinterpret_cast<char*>(&command), sizeof(int));
+                h2_fm_glCommand_t cmd;
+                cmd.count = command;
+                if (command != 0) {
                     int numVerts = abs(command);
+                    if ((streamoff)inFile.tellg() + (streamoff)numVerts * 12 > blockEnd) {
+                        cout << "Error: GL command (count=" << command << ") overruns block." << endl;
+                        exit(1);
+                    }
                     for (int j = 0; j < numVerts; j++) {
                         h2_fm_glCommandVertex_t v;
                         inFile.read(reinterpret_cast<char*>(&v.s), sizeof(float));
@@ -428,8 +423,8 @@ H2_FM_file ReadFM(fs::path filePath) {
                         inFile.read(reinterpret_cast<char*>(&v.vertexIndex), sizeof(int));
                         cmd.vertices.push_back(v);
                     }
-                    NewFlexModel.glCommands.push_back(cmd);
                 }
+                NewFlexModel.glCommands.push_back(cmd);
             }
             cout << "GL commands block parsed." << endl;
         }
@@ -578,7 +573,10 @@ void FM2JSON(H2_FM_file NewFlexModel, fs::path outPath) {
      jsonFM["glCommands"] = json::array();
      for (const auto& cmd : NewFlexModel.glCommands) {
          json jCmd;
-         jCmd["strip"] = (cmd.count > 0);
+         if (cmd.count == 0)
+             jCmd["strip"] = nullptr; //glc terminator
+         else
+             jCmd["strip"] = (cmd.count > 0);
          jCmd["verts"] = json::array();
          for (const auto& v : cmd.vertices)
              jCmd["verts"].push_back({ v.s, v.t, v.vertexIndex });
